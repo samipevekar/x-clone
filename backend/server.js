@@ -4,9 +4,9 @@ import connectMongoDB from './db/connectMongodb.js';
 import cookieParser from 'cookie-parser';
 import {v2 as cloudinary} from "cloudinary"
 
-import authRoutes from './routes/authroutes.js'
-import userRoutes from './routes/userroutes.js'
-import postroutes from './routes/postroutes.js'
+import authRoutes from './routes/auth.route.js'
+import userRoutes from './routes/user.route.js'
+import postroutes from './routes/post.route.js'
 
 dotenv.config()
 
