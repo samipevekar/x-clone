@@ -1,45 +1,53 @@
-import { generateTokenAndSetCookie } from "../lib/utils/generateToken.js";
-import User from "../models/user.model.js";
-import bcrypt from 'bcryptjs'
+import { generateTokenAndSetCookie } from "../lib/utils/generateToken.js"; 
+import User from "../models/user.model.js"; 
+import bcrypt from 'bcryptjs'; 
 
-export const signup = async(req,res)=>{
+// Signup controller
+export const signup = async(req, res) => {
     try {
-        const {fullName,username,email,password} = req.body;
+        const { fullName, username, email, password } = req.body;
 
+        // Validate email format
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if(!emailRegex.test(email)){
-            return res.status(400).json({error:"Invalid email format"})
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
         }
 
-        const existingUser = await User.findOne({username})
-        if(existingUser){
-            return res.status(400).json({error:"Username already exists"})
+        // Check if username already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ error: "Username already exists" });
         }
 
-        const existingEmail = await User.findOne({email})
-        if(existingEmail){
-            return res.status(400).json({error:"Email already exists"})
+        // Check if email already exists
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+            return res.status(400).json({ error: "Email already exists" });
         }
 
-        if(password.length < 6){
-            return res.status(400).json({error:"Password must be at least 6 characters long"})
+        // Check password length
+        if (password.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters long" });
         }
 
-        // hash password
-        const salt =await bcrypt.genSalt(10)
-        const hashPassword = await bcrypt.hash(password,salt);
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
 
+        // Create new user instance
         const newUser = new User({
-            fullName:fullName,
-            username:username,
-            email:email,
-            password:hashPassword
-        })
+            fullName: fullName,
+            username: username,
+            email: email,
+            password: hashPassword
+        });
 
-        if(newUser){
-            generateTokenAndSetCookie(newUser._id,res)
-            await newUser.save();
+        if (newUser) {
+            // Generate token and set it as a cookie
+            generateTokenAndSetCookie(newUser._id, res);
+            await newUser.save();  // Save the new user to the database
 
+            // Respond with the newly created user details (excluding password)
             res.status(201).json({
                 _id: newUser._id,
                 fullName: newUser.fullName,
@@ -49,27 +57,35 @@ export const signup = async(req,res)=>{
                 following: newUser.following,
                 profileImg: newUser.profileImg,
                 coverImg: newUser.coverImg
-
-            })
-        }else{
-            res.status(400).json({error:"Invalid user data"})
+            });
+        } else {
+            res.status(400).json({ error: "Invalid user data" });
         }
 
     } catch (error) {
-        console.log("error in signup controller",error)
-        res.status(500).json({error:"Internal Server Error"})
+        console.log("Error in signup controller", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-}
-export const login = async(req,res)=>{
+};
+
+// Login controller
+export const login = async(req, res) => {
     try {
-        const {username,password} = req.body
-        const user = await User.findOne({username})
-        const isPasswordCorrect = await bcrypt.compare(password,user?.password || "")
-        if(!user || !isPasswordCorrect){
-            return res.status(400).json({error:"Invalid username or password"})
+        const { username, password } = req.body;
+
+        // Find user by username
+        const user = await User.findOne({ username });
+
+        // Check if the password is correct
+        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+        if (!user || !isPasswordCorrect) {
+            return res.status(400).json({ error: "Invalid username or password" });
         }
 
-        generateTokenAndSetCookie(user._id,res);
+        // Generate token and set it as a cookie
+        generateTokenAndSetCookie(user._id, res);
+
+        // Respond with the user details (excluding password)
         res.status(200).json({
             _id: user._id,
             fullName: user.fullName,
@@ -79,31 +95,34 @@ export const login = async(req,res)=>{
             following: user.following,
             profileImg: user.profileImg,
             coverImg: user.coverImg
-        })
+        });
 
-        
     } catch (error) {
-        console.log("error in login controller",error)
-        res.status(500).json({error:"Internal Server Error"})
+        console.log("Error in login controller", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
+};
 
-}
-export const logout = async(req,res)=>{
+// Logout controller
+export const logout = async(req, res) => {
     try {
-        res.cookie("jwt","",{maxAge:0})
-        res.status(200).json({message:"Logged out successfully"})
+        // Clear the JWT cookie
+        res.cookie("jwt", "", { maxAge: 0 });
+        res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-        console.log("error in logout controller",error)
-        res.status(500).json({error:"Internal Server Error"})
+        console.log("Error in logout controller", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
-export const getMe = async(req,res)=>{
+// Get current user (profile) controller
+export const getMe = async(req, res) => {
     try {
-        const user = await User.findById(req.user._id).select("-password")
-        res.status(200).json(user)
+        // Find the user by ID and exclude the password field from the result
+        const user = await User.findById(req.user._id).select("-password");
+        res.status(200).json(user);
     } catch (error) {
-        console.log("error in getMe controller",error)
-        res.status(500).json({error:"Internal Server Error"})
+        console.log("Error in getMe controller", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
