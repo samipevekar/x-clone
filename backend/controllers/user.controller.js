@@ -16,8 +16,8 @@ export const getUserProfile = async (req, res) => {
         }
         res.status(200).json(user); // Respond with the user profile
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-        console.log("Error in getUserProfile function", error);
+        res.status(500).json({error:error.message});
+        console.log("error in getUserProfile function",error)
     }
 };
 
@@ -61,8 +61,8 @@ export const followUnfollowUser = async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-        console.log("Error in followUnfollowUser function", error);
+        res.status(500).json({error:error.message});
+        console.log("error in followUnfollowUser function",error)
     }
 };
 
@@ -91,8 +91,8 @@ export const getSuggestedUsers = async (req, res) => {
         res.status(200).json(suggestedUsers); // Respond with suggested users
 
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-        console.log("Error in getSuggestedUsers function", error);
+        res.status(500).json({error:error.message});
+        console.log("error in getSuggestedUsers function",error)
     }
 };
 
@@ -163,7 +163,7 @@ export const updateUser = async (req, res) => {
         res.status(200).json(user); // Respond with the updated user profile
 
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-        console.log("Error in updateUser function", error);
+        res.status(500).json({error:error.message});
+        console.log("error in updateProfile function",error)
     }
 };
