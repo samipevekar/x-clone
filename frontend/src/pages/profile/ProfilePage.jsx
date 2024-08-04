@@ -99,17 +99,19 @@ const ProfilePage = () => {
 								<div className='avatar absolute -bottom-16 left-4'>
 									<div className='w-32 rounded-full relative group/avatar'>
 										<img src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
+										{isMyProfile && (
 										<div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
-											{isMyProfile && (
 												<MdEdit
 													className='w-4 h-4 text-white'
 													onClick={() => profileImgRef.current.click()}
 												/>
-											)}
+											
 										</div>
+									)}
 									</div>
 								</div>
 							</div>
+							
 							<div className='flex justify-end px-4 mt-5'>
 								{isMyProfile && <EditProfileModal />}
 								{!isMyProfile && (

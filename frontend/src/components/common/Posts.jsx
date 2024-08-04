@@ -9,9 +9,9 @@ const Posts = () => {
 		<>
 			{isLoading && (
 				<div className='flex flex-col justify-center'>
-					<PostSkeleton />
-					<PostSkeleton />
-					<PostSkeleton />
+					{Array(3).fill(<PostSkeleton />).map(elt=>{
+						return elt
+					})}
 				</div>
 			)}
 			{!isLoading && POSTS?.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}

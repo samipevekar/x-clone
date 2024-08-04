@@ -121,9 +121,10 @@ const Post = ({ post }) => {
 									</form>
 								</div>
 								<form method='dialog' className='modal-backdrop'>
-									<button className='outline-none'>close</button>
+									<button className='outline-none '>close</button>
 								</form>
 							</dialog>
+
 							<div className='flex gap-1 items-center group cursor-pointer'>
 								<BiRepost className='w-6 h-6  text-slate-500 group-hover:text-green-500' />
 								<span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>

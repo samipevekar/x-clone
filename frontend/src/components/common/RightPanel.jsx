@@ -12,17 +12,14 @@ const RightPanel = () => {
 				<div className='flex flex-col gap-4'>
 					{/* item */}
 					{isLoading && (
-						<>
-							<RightPanelSkeleton />
-							<RightPanelSkeleton />
-							<RightPanelSkeleton />
-							<RightPanelSkeleton />
-						</>
+						Array(4).fill(<RightPanelSkeleton />).map(elt=>{
+							return elt
+						})
 					)}
-					{!isLoading &&
+					{!isLoading &&						
 						USERS_FOR_RIGHT_PANEL?.map((user) => (
 							<Link
-								to={`/profile/${user.username}`}
+							to={`/profile/${user.username}`}
 								className='flex items-center justify-between gap-4'
 								key={user._id}
 							>
