@@ -98,6 +98,14 @@ export const commentOnPost = async (req, res) => {
         post.comments.push(comment); // Add the comment to the post
         await post.save(); // Save the post
 
+        const notification = new Notification({
+            from: userId,
+            to: post.user,
+            type: "comment",
+        })
+
+        await notification.save()
+
         res.status(200).json(post); // Respond with the updated post
 
     } catch (error) {
