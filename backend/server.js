@@ -22,11 +22,15 @@ cloudinary.config({
 const app = express();
 const PORT = process.env.PORT || 5000
 
-app.use(cors({
+const corsConfig = {
     origin:"*",
     methods:["GET","POST","DELETE","PUT","OPTIONS"],
     credentials:true
-}))
+}
+
+app.use(cors(corsConfig))
+
+app.options("",cors(corsConfig))
 
 app.use(express.json({limit:"5mb"}))        // to parse req.body
 app.use(express.urlencoded({extended:true}))  // to parse form data
