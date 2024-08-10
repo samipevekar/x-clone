@@ -10,7 +10,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/api": {
-        target: "https://x-backend-v5rr.onrender.com",
+        target: "https://x-backend-ujvu.onrender.com",
         changeOrigin: true
       }
     }
