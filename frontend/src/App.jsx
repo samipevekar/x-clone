@@ -9,6 +9,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import {Toaster} from "react-hot-toast"
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
+import Bookmark from "./pages/bookmark/Bookmark";
 
 function App() {
 	const {data:authUser,isLoading} = useQuery({
@@ -16,7 +17,7 @@ function App() {
 		queryKey:['authUser'],
 		queryFn: async()=>{
 			try {
-				const res = await fetch("/api/auth/me");
+				const res = await fetch("/api/auth/me",{credentials:"include"});
 				const data = await res.json();
 				if(data.error) return null
 				if(!res.ok){
@@ -39,8 +40,6 @@ function App() {
 		)
 	}
 
-	console.log(authUser)
-
 
 	return (
 		<div className='flex max-w-6xl mx-auto'>
@@ -51,6 +50,7 @@ function App() {
 				<Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to="/"/>} />
 				<Route path='/signup' element={!authUser ? <SignUpPage /> : <Navigate to="/"/>} />
 				<Route path='/notifications' element={authUser ? <NotificationPage /> : <Navigate to="/login"/>} />
+				<Route path='/bookmark' element={authUser ? <Bookmark /> : <Navigate to="/login"/>} />
 				<Route path='/profile/:username' element={authUser ? <ProfilePage /> : <Navigate to="/"/>} />
 				<Route path='*' element={<Navigate to="/"/>} />
 			</Routes>

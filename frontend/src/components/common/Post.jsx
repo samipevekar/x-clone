@@ -2,140 +2,165 @@ import { FaRegComment } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
 import { FaRegHeart } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
+import { FaBookmark } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-hot-toast"
-import LoadingSpinner from "./LoadingSpinner"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
+import LoadingSpinner from "./LoadingSpinner";
 import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
-	const {data:authUser} = useQuery({queryKey:["authUser"]})
-	const queryClient = useQueryClient()
+	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+	const queryClient = useQueryClient();
 
-	const postOwner = post.user;
-	const isLiked = post.likes.includes(authUser._id) 
-	const isMyPost = authUser._id === post.user._id;
-	const formattedDate = formatPostDate(post.createdAt)
+	const postOwner = post.repost && post.originalPost.user ? post.originalPost.user : post.user;
+	const originalPost = post.repost ? post.originalPost : post;
+	const isLiked = originalPost.likes.includes(authUser?._id);
+	const isMyPost = authUser._id === post.user?._id;
+	const formattedDate = formatPostDate(post.createdAt);
+	const isBookmarked = authUser.bookmarkedPosts.includes(originalPost._id);
+	const repost = post.repost;
 
+	const repostedByMe = repost && authUser.username === post.user.username;
+	
 
-	// to handle delete post
-	const {mutate:deletePost,isPending:isDeleting} = useMutation({
-		mutationFn: async()=>{
-			try {
-				const res = await fetch(`/api/posts/${post._id}`,{
-					method:"DELETE",
-				})
-				const data = await res.json()
+	// Handle delete post
+	const { mutate: deletePost, isPending: isDeleting } = useMutation({
+		mutationFn: async () => {
+			const res = await fetch(`/api/posts/${post._id}`, { method: "DELETE" });
+			const data = await res.json();
 
-				if(!res.ok){
-					throw new Error(data.error || "Something went wrong")
-				}
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-				return data
-			} catch (error) {
-				throw new Error(error)
-			}
+			return data;
 		},
-
-		onSuccess: ()=>{
-			toast.success("Post deleted successfully")
-			// invalidate the query to refetch the data
-			queryClient.invalidateQueries({queryKey:["posts"]})
-		}
-		
-
-	})
-
-	// to handle like post 
-	const {mutate:likePost, isPending:isLiking} = useMutation({
-		mutationFn: async()=>{
-			try {
-				const res = await fetch(`/api/posts/like/${post._id}`,{
-					method:"POST"
-				})
-				const data = await res.json()
-				if(!res.ok){
-					throw new Error(data.error || "Something went wrong")
-				}
-				return data
-			} catch (error) {
-				throw new Error(error)
-			}
+		onSuccess: () => {
+			toast.success("Post deleted successfully");
+			queryClient.invalidateQueries({ queryKey: ["posts"] });
 		},
-		onSuccess: (updatedLikes)=>{
-			// this is not the best UX
-			// queryClient.invalidateQueries({queryKey:["posts"]})
-			// instead , update the cache directly
+	});
 
-			queryClient.setQueryData(["posts"],(oldData)=>{
-				return oldData.map((p)=>{
-					if(p._id === post._id){
-						return {...p,likes:updatedLikes}
+	// Handle like post
+	const { mutate: likePost, isPending: isLiking } = useMutation({
+		mutationFn: async () => {
+			const res = await fetch(`/api/posts/like/${originalPost._id}`, { method: "POST" });
+			const data = await res.json();
+
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+			return data;
+		},
+		onSuccess: (updatedLikes) => {
+			queryClient.setQueryData(["posts"], (oldData) =>
+				oldData.map((p) => {
+					if (p._id === originalPost._id || (p.repost && p.originalPost._id === originalPost._id)) {
+						return { ...p, likes: updatedLikes };
 					}
-					return p
+					return p;
 				})
-			})
+			);
+			queryClient.invalidateQueries({ queryKey: ['bookmarkPosts'] });
 		},
-		onError : (error)=>{
-			toast.error(error.message)
-		}
-	})
-
-	// to handle comment on post
-	const {mutate:commentPost, isPending:isCommenting} = useMutation({
-		mutationFn: async()=>{
-			try {
-				const res = await fetch(`/api/posts/comment/${post._id}`,{
-					method:"POST",
-					headers:{
-						"Content-Type":"application/json"
-					},
-					body: JSON.stringify({text:comment})
-				})
-				const data = await res.json()
-				if(!res.ok){
-					throw new Error(data.error || "Something went wrong")
-				}
-				return data
-			} catch (error) {
-				throw new Error(error)
-			}
+		onError: (error) => {
+			toast.error(error.message);
 		},
+	});
 
-		onSuccess: ()=>{
-			toast.success("Commnet posted successfully")
-			queryClient.invalidateQueries(["posts"])
+	// Handle comment on post
+	const { mutate: commentPost, isPending: isCommenting } = useMutation({
+		mutationFn: async () => {
+			const res = await fetch(`/api/posts/comment/${originalPost._id}`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ text: comment }),
+			});
+			const data = await res.json();
+
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+			return data;
 		},
-		onError: (error)=>{
-			toast.error(error.message)
-		}
-	})	
+		onSuccess: () => {
+			toast.success("Comment posted successfully");
+			queryClient.invalidateQueries(["posts"]);
+		},
+		onError: (error) => {
+			toast.error(error.message);
+		},
+	});
 
+	// Handle bookmark post
+	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
+		mutationFn: async () => {
+			const res = await fetch(`/api/posts/bookmark/${originalPost._id}`, { method: "POST" });
+			const data = await res.json();
 
-	// to handle delete post
-	const handleDeletePost = () => {
-		deletePost();
-	};
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-	// to handle comment on post
+			return data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['bookmarkPosts'] });
+			queryClient.invalidateQueries({ queryKey: ['posts'] });
+		},
+		onError: (error) => {
+			toast.error(error);
+		},
+	});
+
+	// Handle repost
+	const { mutate: repostPost, isPending: isReposting } = useMutation({
+		mutationFn: async () => {
+			const res = await fetch(`/api/posts/repost/${post._id}`, { method: "POST" });
+			const data = await res.json();
+
+			if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+			return data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['posts'] });
+		},
+		onError: (error) => {
+			toast.error(error);
+		},
+	});
+
+	const handleDeletePost = () => deletePost();
 	const handlePostComment = (e) => {
 		e.preventDefault();
-		if (isCommenting) return
-		commentPost()
+		if (isCommenting) return;
+		commentPost();
+	};
+	const handleLikePost = () => {
+		if (isLiking) return;
+		likePost();
+	};
+	const handleBookmarkPost = () => {
+		if (isBookmarking) return;
+		bookmarkPost();
+	};
+	const handleRepost = () => {
+		if (isReposting) return;
+
+		if (repost) {
+			// If the current post is a repost, delete it
+			deletePost();
+		} else {
+			// Otherwise, repost the original post
+			repostPost();
+		}
 	};
 
-	// to handle like post 
-	const handleLikePost = () => {
-		if(isLiking) return;
-		likePost()
-	};
+	// const repostedByMe = authUser.username === post.user.username;
 
 	return (
 		<>
-			<div className='flex gap-2 items-start p-4 border-b border-gray-700'>
+			<div className={`flex gap-2 items-start p-4 border-b border-gray-700 relative ${repost && "pt-12"}`}>
+				{repost && <div className="absolute top-2 text-gray-400 font-bold flex items-center gap-2 text-[13px]"><BiRepost className="text-[18px]" /> {repostedByMe ? "You" : post.user.username} reposted</div>}
 				<div className='avatar'>
 					<Link to={`/profile/${postOwner.username}`} className='w-8 h-8 rounded-full overflow-hidden'>
 						<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
@@ -151,6 +176,7 @@ const Post = ({ post }) => {
 							<span>·</span>
 							<span>{formattedDate}</span>
 						</span>
+
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
 								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
@@ -161,10 +187,12 @@ const Post = ({ post }) => {
 						)}
 					</div>
 					<div className='flex flex-col gap-3 overflow-hidden'>
-						<span>{post.text}</span>
-						{post.img && (
+						{/* Check if the post is a repost; if it is, display the original post's text */}
+						<span>{repost ? originalPost.text : post.text}</span>
+						{/* Check if the post (original or repost) has an image and display it */}
+						{(repost ? originalPost.img : post.img) && (
 							<img
-								src={post.img}
+								src={repost ? originalPost.img : post.img}
 								className='h-80 object-contain rounded-lg border border-gray-700'
 								alt=''
 							/>
@@ -236,29 +264,29 @@ const Post = ({ post }) => {
 								</form>
 							</dialog>
 
-							<div className='flex gap-1 items-center group cursor-pointer'>
-								<BiRepost className='w-6 h-6  text-slate-500 group-hover:text-green-500' />
-								<span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
+							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleRepost}>
+								{isReposting ? <LoadingSpinner size={"sm"} /> : <BiRepost className={`w-6 h-6  ${repostedByMe  ? "text-green-500" : "text-slate-500"}  group-hover:text-green-500`} />}
+								<span className='text-sm text-slate-500 group-hover:text-green-500'>{post.repost.length}</span>
 							</div>
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
-								{isLiking && <LoadingSpinner size="sm"/>}
+								{isLiking && <LoadingSpinner size="sm" />}
 								{!isLiked && !isLiking && (
 									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
 								)}
 								{isLiked && !isLiking && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
 
 								<span
-									className={`text-sm  group-hover:text-pink-500 ${
-										isLiked ? "text-pink-500" : "text-slate-500"
-									}`}
+									className={`text-sm  group-hover:text-pink-500 ${isLiked ? "text-pink-500" : "text-slate-500"
+										}`}
 								>
 									{post.likes.length}
 								</span>
 							</div>
 						</div>
-						<div className='flex w-1/3 justify-end gap-2 items-center'>
-							<FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' />
-						</div>
+						{<div className='flex w-1/3 justify-end gap-2 items-center' onClick={handleBookmarkPost}>
+							{isBookmarking && <LoadingSpinner size={"sm"} />}
+							{!isBookmarked ? <FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' /> : <FaBookmark className="w-4 h-4  cursor-pointer" />}
+						</div>}
 					</div>
 				</div>
 			</div>

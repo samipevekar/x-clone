@@ -52,7 +52,13 @@ const userSchema = new mongoose.Schema({
             ref: 'Post',
             default: []
         }
-    ]
+    ],
+    bookmarkedPosts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post',
+        }
+    ],
 },{timestamps:true})
 
 const User = mongoose.model("User",userSchema)

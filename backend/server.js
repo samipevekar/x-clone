@@ -24,7 +24,7 @@ const app = express();
 const PORT = process.env.PORT || 5000
 
 const corsConfig = {
-    origin:["https://x-frontend-8xv0.onrender.com","*"],
+    origin:["https://x-frontend-8xv0.onrender.com","*","https://x-frontend-8kh3.onrender.com","http://localhost:5173", "http://localhost:3000"],
     methods:["GET","POST","DELETE","PUT","OPTIONS"],
     credentials:true
 }

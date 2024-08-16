@@ -31,7 +31,15 @@ const postSchema = new mongoose.Schema({
                 required:true
             }
         }
-    ]
+    ],
+    originalPost: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
+    },
+    repost:{
+        type: Boolean,
+        default:false
+    }
 
 },{timestamps:true})
 

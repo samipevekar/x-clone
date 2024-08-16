@@ -166,20 +166,30 @@ export const likeUnlikePost = async (req, res) => {
 // Controller for getting all posts
 export const getAllPost = async (req, res) => {
     try {
-        // Find all posts and sort by creation date in descending order
         const posts = await Post.find().sort({ createdAt: -1 }).populate({
             path: "user",
             select: "-password"
         }).populate({
             path: "comments.user",
             select: "-password"
+        }).populate({
+            path: "originalPost",
+            populate: {
+                path: "user",
+                select: "username fullName profileImg"
+            }
         });
 
-        if (posts.length === 0) {
-            return res.status(200).json([]);
-        }
+        const updatedPosts = posts.map(post => {
+            if (post.repost && post.originalPost) {
+                // Reflect likes and comments from the original post
+                post.likes = post.originalPost.likes;
+                post.comments = post.originalPost.comments;
+            }
+            return post;
+        });
 
-        res.status(200).json(posts); // Respond with all posts
+        res.status(200).json(updatedPosts);
 
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
@@ -187,27 +197,43 @@ export const getAllPost = async (req, res) => {
     }
 };
 
+
 // Controller for getting liked posts of a user
 export const getLikedPost = async (req, res) => {
     const userId = req.params.id;
     try {
         const user = await User.findById(userId);
 
-        // Check if the user exists
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Find all posts liked by the user
-        const likedPosts = await Post.find({ _id: { $in: user.likedPosts } }).populate({
-            path: "user",
-            select: "-password"
-        }).populate({
-            path: "comments.user",
-            select: "-password"
+        const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+            .populate({
+                path: "comments.user",
+                select: "-password"
+            })
+            .populate({
+                path: "originalPost",
+                populate: {
+                    path: "user",
+                    select: "username fullName profileImg"
+                }
+            });
+
+        const updatedPosts = likedPosts.map(post => {
+            if (post.repost && post.originalPost) {
+                post.likes = post.originalPost.likes;
+                post.comments = post.originalPost.comments;
+            }
+            return post;
         });
 
-        res.status(200).json(likedPosts); // Respond with liked posts
+        res.status(200).json(updatedPosts);
 
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
@@ -215,20 +241,19 @@ export const getLikedPost = async (req, res) => {
     }
 };
 
+
 // Controller for getting posts of the users followed by the current user
 export const getFollowingPosts = async (req, res) => {
     try {
         const userId = req.user._id;
         const user = await User.findById(userId);
 
-        // Check if the user exists
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
         const following = user.following;
 
-        // Find all posts from the users followed by the current user
         const feedPosts = await Post.find({ user: { $in: following } })
             .sort({ createdAt: -1 })
             .populate({
@@ -238,9 +263,24 @@ export const getFollowingPosts = async (req, res) => {
             .populate({
                 path: "comments.user",
                 select: "-password"
+            })
+            .populate({
+                path: "originalPost",
+                populate: {
+                    path: "user",
+                    select: "username fullName profileImg"
+                }
             });
 
-        res.status(200).json(feedPosts); // Respond with the feed posts
+        const updatedPosts = feedPosts.map(post => {
+            if (post.repost && post.originalPost) {
+                post.likes = post.originalPost.likes;
+                post.comments = post.originalPost.comments;
+            }
+            return post;
+        });
+
+        res.status(200).json(updatedPosts);
 
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
@@ -255,12 +295,10 @@ export const getUserPosts = async (req, res) => {
 
         const user = await User.findOne({ username });
 
-        // Check if the user exists
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Find all posts by the user and sort by creation date in descending order
         const posts = await Post.find({ user: user._id }).sort({ createdAt: -1 })
             .populate({
                 path: "user",
@@ -269,12 +307,143 @@ export const getUserPosts = async (req, res) => {
             .populate({
                 path: "comments.user",
                 select: "-password"
+            })
+            .populate({
+                path: "originalPost",
+                populate: {
+                    path: "user",
+                    select: "username fullName profileImg"
+                }
             });
 
-        res.status(200).json(posts); // Respond with the user's posts
+        const updatedPosts = posts.map(post => {
+            if (post.repost && post.originalPost) {
+                post.likes = post.originalPost.likes;
+                post.comments = post.originalPost.comments;
+            }
+            return post;
+        });
+
+        res.status(200).json(updatedPosts);
 
     } catch (error) {
         res.status500.json({ error: "Internal server error" });
         console.log("Error in getUserPosts function", error);
+    }
+};
+
+
+// Controller for bookmarking or unbookmarking a post
+export const bookmarkUnbookmarkPost = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const userId = req.user._id;
+
+        const post = await Post.findById(postId).populate({
+            path: "originalPost",
+            populate: {
+                path: "user",
+                select: "username fullName profileImg" // Select the fields you want from the original post's user
+            }
+        });
+        if(!post){
+            return res.status(404).json({error: "Post not found"})
+        }
+
+        const user = await User.findById(userId);
+
+        // Check if the post is already bookmarked by the user
+        let isBookmarked = user.bookmarkedPosts.includes(postId);
+
+        if (isBookmarked) {
+            // Unbookmark the post
+            user.bookmarkedPosts.pull(postId);
+            res.status(200).json({ message: "Post unbookmarked successfully" });
+        } else {
+            // Bookmark the post
+            user.bookmarkedPosts.push(postId);
+            res.status(200).json({ message: "Post bookmarked successfully" });
+        }
+
+        await user.save(); // Save the user with the updated bookmarked posts
+
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+        console.log("Error in bookmarkUnbookmarkPost function", error);
+    }
+};
+
+
+
+// Controller for getting bookmarked posts of the logged-in user
+export const getBookmarkedPosts = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const user = await User.findById(userId).populate({
+            path: "bookmarkedPosts",
+            populate: [
+                {
+                    path: "user", // Populate the user who created the post
+                    select: "-password"
+                },
+                {
+                    path: "comments.user", // Populate the user who commented on the post
+                    select: "-password"
+                }
+            ]
+        });
+
+        res.status(200).json(user.bookmarkedPosts); // Respond with bookmarked posts
+
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+        console.log("Error in getBookmarkedPosts function", error);
+    }
+};
+
+
+// controller to repostPost
+export const repostPost = async (req, res) => {
+    try {
+        const postId = req.params.id; // ID of the post to be reposted
+        const userId = req.user._id; // ID of the user who is reposting
+
+        // Check if the user has already reposted this post
+        const existingRepost = await Post.findOne({ user: userId, originalPost: postId, repost: true });
+
+        if (existingRepost) {
+            // If the repost exists, delete it
+            await Post.findByIdAndDelete(existingRepost._id);
+            return res.status(200).json({ message: "Repost removed successfully" });
+        }
+
+        // Find the original post
+        const originalPost = await Post.findById(postId).populate({
+            path:"user",
+            select:"-password"
+        }); // Populate with username and name;
+
+        if (!originalPost) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Create a new repost (reference to the original post)
+        const newRepost = new Post({
+            user: userId,
+            repost: true,
+            originalPost: postId
+        });
+
+        await newRepost.save();
+
+        res.status(200).json({ 
+            message: "Post reposted successfully", 
+            repost: newRepost
+        });
+
+    } catch (error) {
+        console.error("Error in repostPost function", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
