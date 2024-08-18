@@ -358,11 +358,13 @@ export const bookmarkUnbookmarkPost = async (req, res) => {
         if (isBookmarked) {
             // Unbookmark the post
             user.bookmarkedPosts.pull(postId);
-            res.status(200).json({ message: "Post unbookmarked successfully" });
+            const updatedBookmark = user.bookmarkedPosts
+            res.status(200).json(updatedBookmark);
         } else {
             // Bookmark the post
             user.bookmarkedPosts.push(postId);
-            res.status(200).json({ message: "Post bookmarked successfully" });
+            const updatedBookmark = user.bookmarkedPosts
+            res.status(200).json(updatedBookmark);
         }
 
         await user.save(); // Save the user with the updated bookmarked posts

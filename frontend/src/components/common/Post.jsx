@@ -21,11 +21,13 @@ const Post = ({ post }) => {
 	const isLiked = originalPost.likes.includes(authUser?._id);
 	const isMyPost = authUser._id === post.user?._id;
 	const formattedDate = formatPostDate(post.createdAt);
-	const isBookmarked = authUser.bookmarkedPosts.includes(originalPost._id);
+	// const isBookmarked = authUser.bookmarkedPosts.includes(originalPost?._id);
 	const repost = post.repost;
-
 	const repostedByMe = repost && authUser.username === post.user.username;
-	
+
+	const isInitiallyBookmarked = authUser.bookmarkedPosts.includes(originalPost?._id);
+    const [isBookmarked, setIsBookmarked] = useState(isInitiallyBookmarked);
+
 
 	// Handle delete post
 	const { mutate: deletePost, isPending: isDeleting } = useMutation({
@@ -102,10 +104,18 @@ const Post = ({ post }) => {
 
 			return data;
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['bookmarkPosts'] });
-			queryClient.invalidateQueries({ queryKey: ['posts'] });
-		},
+		onSuccess: (updatedBookmarks) => {
+			setIsBookmarked(!isBookmarked);
+            queryClient.setQueryData(["posts"], (oldData) =>
+                oldData.map((p) => {
+                    if (p._id === originalPost._id) {
+                        return { ...p, bookmarkedPosts: updatedBookmarks };
+                    }
+                    return p;
+                })
+            );
+            toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");
+        },
 		onError: (error) => {
 			toast.error(error);
 		},
@@ -265,7 +275,7 @@ const Post = ({ post }) => {
 							</dialog>
 
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleRepost}>
-								{isReposting ? <LoadingSpinner size={"sm"} /> : <BiRepost className={`w-6 h-6  ${repostedByMe  ? "text-green-500" : "text-slate-500"}  group-hover:text-green-500`} />}
+								{isReposting ? <LoadingSpinner size={"sm"} /> : <BiRepost className={`w-6 h-6  ${repostedByMe ? "text-green-500" : "text-slate-500"}  group-hover:text-green-500`} />}
 								<span className='text-sm text-slate-500 group-hover:text-green-500'>{post.repost.length}</span>
 							</div>
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
@@ -283,9 +293,15 @@ const Post = ({ post }) => {
 								</span>
 							</div>
 						</div>
-						{<div className='flex w-1/3 justify-end gap-2 items-center' onClick={handleBookmarkPost}>
+						{!repost && <div className='flex w-1/3 justify-end gap-2 items-center' onClick={handleBookmarkPost}>
 							{isBookmarking && <LoadingSpinner size={"sm"} />}
-							{!isBookmarked ? <FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' /> : <FaBookmark className="w-4 h-4  cursor-pointer" />}
+							{!isBookmarking && !isBookmarked && (
+								<FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' />
+							)}
+							{isBookmarked && !isBookmarking && (
+								<FaBookmark className="w-4 h-4 cursor-pointer" />
+							)}
+
 						</div>}
 					</div>
 				</div>

@@ -8,6 +8,7 @@ import { BiLogOut } from "react-icons/bi";
 import { FaBookmark } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 const Sidebar = () => {
 	const queryClient = useQueryClient()
@@ -29,6 +30,8 @@ const Sidebar = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({queryKey:["authUser"]})
+			
+			
 		},
 		onError: () => {
 			toast.error("Logout fail")
@@ -36,6 +39,11 @@ const Sidebar = () => {
 	})
 
 	const {data:authUser} = useQuery({queryKey: ["authUser"]})
+	const {data:notifications} = useQuery({queryKey:["notifications"]})
+	
+	const notificationLength = notifications && notifications?.length>0 && notifications.length
+	
+	
 
 	return (
 		<div className='md:flex-[2_2_0] w-18 max-w-52'>
@@ -54,7 +62,8 @@ const Sidebar = () => {
 						</Link>
 					</li>
 
-					<li className='flex justify-center md:justify-start'>
+					<li className='flex justify-center md:justify-start relative'>
+						{notificationLength &&<div className="bg-primary rounded-full w-4 h-4 absolute flex justify-center items-center text-[12px] md:left-2 ">{notificationLength}</div>}
 						<Link
 							to='/notifications'
 							className='flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer'
