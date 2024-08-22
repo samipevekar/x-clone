@@ -5,7 +5,7 @@ import PostSkeleton from '../../components/skeletons/PostSkeleton';
 
 export default function Bookmark() {
     // Fetch bookmark posts using react-query
-    const { data: bookmarkPosts, isLoading, isPending} = useQuery({
+    const { data: bookmarkPosts, isLoading, isPending, refetch, isRefetching } = useQuery({
         queryKey: ['bookmarkPosts'],
         queryFn: async () => {
             try {
@@ -19,32 +19,35 @@ export default function Bookmark() {
                 return data;
                 
             } catch (error) {
-                throw new Error(error)
+                throw new Error(error);
             }
         }
     });
 
-
+    useEffect(() => {
+        refetch();
+    }, [bookmarkPosts, refetch]);
 
     // Safely map through bookmarkPosts if it's defined and has data
     return (
         <div className='border-r-[1px] border-gray-700 w-full'>
-            <div className='w-full h-[30px] flex items-center px-4  py-8 text-[30px] border-b border-gray-700'>
+            <div className='w-full h-[30px] flex items-center px-4 py-8 text-[30px] border-b border-gray-700'>
                 <p className='font-bold text-[16px] h-[20px]'>Bookmarks</p>
             </div>
 
             <div>
+                {(isLoading || isPending || isRefetching) &&
+                    Array(3).fill(<PostSkeleton/>).map(elt=>{
+                        return elt
+                    })
+                }
                 
-                {isLoading && isPending && Array(3).fill(<PostSkeleton />).map(elt=>{
-                    return elt
-
-                }) }
-                {bookmarkPosts && bookmarkPosts.length > 0 ?
-                   ( bookmarkPosts.map((post) => {
-                        return <Post key={post._id} post={post} />
-                    }))
+                {bookmarkPosts && bookmarkPosts.length > 0 && !isRefetching ?
+                    bookmarkPosts.map((post) => (
+                        <Post key={post._id} post={post} />
+                    ))
                     :
-                    (
+                    !isRefetching && (
                         <div className='font-bold text-center my-2'>No bookmark post 😊</div>
                     )
                 }

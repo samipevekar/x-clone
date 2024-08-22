@@ -26,7 +26,7 @@ const Post = ({ post }) => {
 	const repostedByMe = repost && authUser.username === post.user.username;
 
 	const isInitiallyBookmarked = authUser.bookmarkedPosts.includes(originalPost?._id);
-    const [isBookmarked, setIsBookmarked] = useState(isInitiallyBookmarked);
+	const [isBookmarked, setIsBookmarked] = useState(isInitiallyBookmarked);
 
 
 	// Handle delete post
@@ -42,6 +42,7 @@ const Post = ({ post }) => {
 		onSuccess: () => {
 			toast.success("Post deleted successfully");
 			queryClient.invalidateQueries({ queryKey: ["posts"] });
+
 		},
 	});
 
@@ -63,8 +64,7 @@ const Post = ({ post }) => {
 					}
 					return p;
 				})
-			);
-			queryClient.invalidateQueries({ queryKey: ['bookmarkPosts'] });
+			)
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -106,18 +106,19 @@ const Post = ({ post }) => {
 		},
 		onSuccess: (updatedBookmarks) => {
 			setIsBookmarked(!isBookmarked);
-            queryClient.setQueryData(["posts"], (oldData) =>
-                oldData.map((p) => {
-                    if (p._id === originalPost._id) {
-                        return { ...p, bookmarkedPosts: updatedBookmarks };
-                    }
-                    return p;
-                })
-            );
-            toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");
-        },
+			queryClient.setQueryData(["posts"], (oldData) =>
+				oldData?.map((p) => {
+					if (p._id === originalPost._id) {
+						return { ...p, bookmarkedPosts: updatedBookmarks };
+					}
+					return p;
+				})
+			);
+			toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");
+
+		},
 		onError: (error) => {
-			toast.error(error);
+			toast.error(error.message);
 		},
 	});
 
@@ -139,7 +140,10 @@ const Post = ({ post }) => {
 		},
 	});
 
-	const handleDeletePost = () => deletePost();
+	const handleDeletePost = () => {
+		if (isDeleting) return;
+		deletePost()
+	}
 	const handlePostComment = (e) => {
 		e.preventDefault();
 		if (isCommenting) return;
@@ -189,12 +193,26 @@ const Post = ({ post }) => {
 
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
-								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
+								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={()=>document.getElementById('my_modal_1').showModal()} />}
 								{isDeleting && (
 									<LoadingSpinner size="sm" />
 								)}
 							</span>
 						)}
+						{/* confirmation modal for deleteing post */}
+						<dialog id="my_modal_1" className="modal">
+							<div className="modal-box rounded border border-gray-500">
+								<h3 className="font-bold text-lg">Delete</h3>
+								<p className="py-4">Do you want to delete this post?</p>
+								<div className="modal-action">
+									<form method="dialog">
+										{/* if there is a button in form, it will close the modal */}
+										<button className="btn text-white bg-gray-400 rounded">Close</button>
+										<button className="btn text-white bg-red-600 rounded m-2" onClick={handleDeletePost}>Delete</button>
+									</form>
+								</div>
+							</div>
+						</dialog>
 					</div>
 					<div className='flex flex-col gap-3 overflow-hidden'>
 						{/* Check if the post is a repost; if it is, display the original post's text */}
