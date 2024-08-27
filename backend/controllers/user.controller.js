@@ -167,3 +167,29 @@ export const updateUser = async (req, res) => {
         console.log("error in updateProfile function",error)
     }
 };
+
+
+// get following user
+export const getFollowingUser = async(req,res)=>{
+    try {
+        const userId = req.user._id;
+
+        let user = await User.findById(userId).populate("following","username profileImg")
+        if(!user){
+            return res.status(404).json({message:"User not found"})
+        }
+
+        const followedUsers = user.following.map(followedUser => ({
+            id: followedUser._id,
+            username: followedUser.username,
+            profileImg: followedUser.profileImg
+        }));
+
+        res.status(200).json(followedUsers)
+        
+
+    } catch (error) {
+        res.status(500).json({error:error.message});
+        console.log("error in getFollowingUser function",error)
+    }
+}

@@ -5,22 +5,28 @@ import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
 
-import { POSTS } from "../../utils/db/dummy";
+
 
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
-import { formatMemberSinceDate } from "../../utils/date";
+import { formatMemberSinceDate, formatPostDate } from "../../utils/date";
 
 import useFollow from "../../hooks/useFollow";
 import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+import StoryModal from "../../components/common/StoryPage";
+import UserStoryModal from "../../components/common/UserStoryModal";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
 	const [profileImg, setProfileImg] = useState(null);
 	const [feedType, setFeedType] = useState("posts");
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const{data:posts} = useQuery({queryKey:["posts"]})
 
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
@@ -69,13 +75,42 @@ const ProfilePage = () => {
 		}
 	};
 
+	// to get user story
+	const { data: userStory, isLoading: isStoryLoading,refetch:userStoryFetch } = useQuery({
+		queryKey: ["userStory"],
+		queryFn: async () => {
+			try {
+				const res = await fetch(`/api/story/userstory/${user?._id}`)
+				const data = await res.json();
+				if (!res.ok) {
+					throw new Error(data.message || "Failed to fetch user story");
+				}
+				return data;
+			} catch (error) {
+				throw new Error(error.message);
+			}
+		},
+	});
+	
+
 	useEffect(() => {
 		refetch();
 	}, [username, refetch]);
 
+
+	useEffect(() => {
+		userStoryFetch(); // Refetch user stories when user changes
+	}, [user, userStoryFetch]);
+
+	const handleOnClose = ()=>{
+		document.getElementById('user_story_modal').close();
+	}
+
+
 	return (
 		<>
-			<div className='flex-[4_4_0]  border-r border-gray-700 min-h-screen '>
+			<div className='flex-[4_4_0]  border-r border-gray-700 min-h-screen  relative'>
+
 				{/* HEADER */}
 				{(isLoading || isRefetching) && <ProfileHeaderSkeleton />}
 				{!isLoading && !isRefetching && !user && <p className='text-center text-lg mt-4'>User not found</p>}
@@ -88,7 +123,7 @@ const ProfilePage = () => {
 								</Link>
 								<div className='flex flex-col'>
 									<p className='font-bold text-lg'>{user?.fullName}</p>
-									<span className='text-sm text-slate-500'>{POSTS?.length} posts</span>
+									<span className='text-sm text-slate-500'>{posts.length} posts</span>
 								</div>
 							</div>
 							{/* COVER IMG */}
@@ -122,17 +157,17 @@ const ProfilePage = () => {
 									onChange={(e) => handleImgChange(e, "profileImg")}
 								/>
 								{/* USER AVATAR */}
-								<div className='avatar absolute -bottom-16 left-4'>
-									<div className='w-32 rounded-full relative group/avatar'>
-										<img src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
-										<div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
-											{isMyProfile && (
+								<div className={`avatar absolute -bottom-16 left-4 ${userStory?.length > 0 ? "border-[3px] p-[3px] rounded-full border-primary" : ""} `}>
+									<div className={`w-32 rounded-full cursor-pointer relative group/avatar `} >
+										<img onClick={() => document.getElementById('user_story_modal').showModal()} src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
+										{isMyProfile && (<div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
+											
 												<MdEdit
 													className='w-4 h-4 text-white'
 													onClick={() => profileImgRef.current.click()}
 												/>
-											)}
-										</div>
+											
+										</div>)}
 									</div>
 								</div>
 							</div>
@@ -161,6 +196,30 @@ const ProfilePage = () => {
 									</button>
 								)}
 							</div>
+
+
+							{/* story upload button  */}
+							{isMyProfile && !userStory?.length > 0 && <div>
+								<button
+									onClick={() => setIsModalOpen(true)}
+									className="bg-primary text-sm absolute right-4 py-1 mt-4 text-white font-semibold rounded-full px-3.5 border"
+								>
+									Add Story
+								</button>
+								<StoryModal
+									isOpen={isModalOpen}
+									onClose={() => setIsModalOpen(false)}
+
+								/>
+
+							</div>}
+
+							{/* getting user story */}
+							{userStory && userStory.length > 0 && userStory.map((story) => {
+								return (
+									<UserStoryModal key={story._id} id='user_story_modal' story={story} onClose={handleOnClose} storyId={story._id}  />
+								)
+							})}
 
 							<div className='flex flex-col gap-4 mt-14 px-4'>
 								<div className='flex flex-col'>
@@ -228,6 +287,13 @@ const ProfilePage = () => {
 					<Posts feedType={feedType} username={username} userId={user?._id} />
 				</div>
 			</div>
+
+
+
+
+
+
+
 		</>
 	);
 };
