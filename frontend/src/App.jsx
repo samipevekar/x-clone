@@ -12,12 +12,15 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 import Bookmark from "./pages/bookmark/Bookmark";
 
 function App() {
+
+	const URL = import.meta.env.VITE_URL
+	
 	const {data:authUser,isLoading} = useQuery({
 		// we use queryKey to give a unique name to our query and refer to it later
 		queryKey:['authUser'],
 		queryFn: async()=>{
 			try {
-				const res = await fetch("/api/auth/me",{credentials:"include"});
+				const res = await fetch(`${URL}/api/auth/me`,{credentials:"include"});
 				const data = await res.json();
 				if(data.error) return null
 				if(!res.ok){
@@ -29,9 +32,9 @@ function App() {
 				throw new Error(error)
 			}
 		},
-		retry: false
+		// retry: false
 	})
-
+	console.log(URL)
 	if(isLoading) {
 		return (
 			<div className="h-screen flex justify-center items-center">

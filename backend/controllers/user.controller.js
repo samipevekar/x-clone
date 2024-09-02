@@ -111,6 +111,13 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
+        // Check if the new username already exists in the database
+        if (username && username !== user.username) {
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
+                return res.status(400).json({ error: "Username already exists" });
+            }
+        }
         // Validate current and new password fields
         if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
             return res.status(400).json({ error: "Please enter both current and new password to update" });

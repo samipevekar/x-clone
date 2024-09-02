@@ -10,13 +10,15 @@ import { FaComment } from "react-icons/fa";
 
 const NotificationPage = () => {
 
+	const URL = import.meta.env.VITE_URL
+
 	const queryClient = useQueryClient()
 
 	const {data:notifications, isLoading} = useQuery({
 		queryKey: ["notifications"], 
 		queryFn: async()=>{
 			try {
-				const res = await fetch('/api/notifications');
+				const res = await fetch(`${URL}/api/notifications`,{credentials:"include"});
 				const data = res.json()
 				if(!res.ok){
 					throw new Error(data.message || "Something went wrong")
@@ -32,8 +34,9 @@ const NotificationPage = () => {
 	const {mutate:deleteNotifications} = useMutation({
 		mutationFn: async()=>{
 			try {
-				const res = await fetch(`/api/notifications`,{
+				const res = await fetch(`${URL}/api/notifications`,{
 					method: 'DELETE',
+					credentials:"include",
 				})
 				const data = await res.json()
 				if(!res.ok){
@@ -62,10 +65,10 @@ const NotificationPage = () => {
 
 	return (
 		<>
-			<div className='flex-[4_4_0] border-l border-r border-gray-700 min-h-screen'>
+			<div className='flex-[4_4_0] border-l border-r border-gray-700 min-h-screen overflow-auto overflow-x-hidden'>
 				<div className='flex justify-between items-center p-4 border-b border-gray-700'>
 					<p className='font-bold'>Notifications</p>
-					<div className='dropdown '>
+					<div className='dropdown dropdown-end '>
 						<div tabIndex={0} role='button' className='m-1'>
 							<IoSettingsOutline className='w-4' />
 						</div>

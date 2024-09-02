@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
 import { useNavigate } from "react-router-dom";
@@ -14,9 +13,7 @@ const EditProfileModal = ({ authUser }) => {
 		currentPassword: "",
 	});
 
-	const navigate = useNavigate()
-
-	
+	const navigate = useNavigate();
 
 	const { updateProfile, isUpdatingProfile } = useUpdateUserProfile();
 
@@ -38,6 +35,20 @@ const EditProfileModal = ({ authUser }) => {
 		}
 	}, [authUser]);
 
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		try {
+			await updateProfile(formData);
+			if (formData.username) {
+				// Navigate only if the profile update was successful
+				navigate(`/profile/${formData.username}`, { replace: true });
+			}
+		} catch (error) {
+			// Handle any errors from the update
+			console.error("Profile update failed:", error.message);
+		}
+	};
+
 	return (
 		<>
 			<button
@@ -49,14 +60,7 @@ const EditProfileModal = ({ authUser }) => {
 			<dialog id='edit_profile_modal' className='modal'>
 				<div className='modal-box border rounded-md border-gray-700 shadow-md'>
 					<h3 className='font-bold text-lg my-3'>Update Profile</h3>
-					<form
-						className='flex flex-col gap-4'
-						onSubmit={(e) => {
-							e.preventDefault();
-							updateProfile(formData);
-						 	formData.username && navigate(`/profile/${formData.username}`,{replace:true})
-						}}
-					>
+					<form className='flex flex-col gap-4' onSubmit={handleSubmit}>
 						<div className='flex flex-wrap gap-2'>
 							<input
 								type='text'
@@ -130,4 +134,5 @@ const EditProfileModal = ({ authUser }) => {
 		</>
 	);
 };
+
 export default EditProfileModal;

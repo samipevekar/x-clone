@@ -12,9 +12,16 @@ import LoadingSpinner from "./LoadingSpinner";
 import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
+
+	const URL = import.meta.env.VITE_URL
+
+	
+
+
 	const [comment, setComment] = useState("");
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();
+
 
 	const postOwner = post.repost && post.originalPost.user ? post.originalPost.user : post.user;
 	const originalPost = post.repost ? post.originalPost : post;
@@ -32,7 +39,7 @@ const Post = ({ post }) => {
 	// Handle delete post
 	const { mutate: deletePost, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`/api/posts/${post._id}`, { method: "DELETE" });
+			const res = await fetch(`${URL}/api/posts/${post._id}`, { method: "DELETE", credentials:"include" });
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -49,7 +56,7 @@ const Post = ({ post }) => {
 	// Handle like post
 	const { mutate: likePost, isPending: isLiking } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`/api/posts/like/${originalPost._id}`, { method: "POST" });
+			const res = await fetch(`${URL}/api/posts/like/${originalPost._id}`, { method: "POST", credentials:"include" });
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -74,8 +81,9 @@ const Post = ({ post }) => {
 	// Handle comment on post
 	const { mutate: commentPost, isPending: isCommenting } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`/api/posts/comment/${originalPost._id}`, {
+			const res = await fetch(`${URL}/api/posts/comment/${originalPost._id}`, {
 				method: "POST",
+				credentials:"include",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ text: comment }),
 			});
@@ -97,7 +105,7 @@ const Post = ({ post }) => {
 	// Handle bookmark post
 	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`/api/posts/bookmark/${originalPost._id}`, { method: "POST" });
+			const res = await fetch(`${URL}/api/posts/bookmark/${originalPost._id}`, { method: "POST",credentials:"include", });
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -125,7 +133,7 @@ const Post = ({ post }) => {
 	// Handle repost
 	const { mutate: repostPost, isPending: isReposting } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`/api/posts/repost/${post._id}`, { method: "POST" });
+			const res = await fetch(`${URL}/api/posts/repost/${post._id}`, { method: "POST" ,credentials:"include"});
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -182,7 +190,7 @@ const Post = ({ post }) => {
 				</div>
 				<div className='flex flex-col flex-1'>
 					<div className='flex gap-2 items-center'>
-						<Link to={`/profile/${postOwner.username}`} className='font-bold'>
+						<Link to={`/profile/${postOwner.username}`} className='font-bold text-sm'>
 							{postOwner.fullName}
 						</Link>
 						<span className='text-gray-700 flex gap-1 text-sm'>

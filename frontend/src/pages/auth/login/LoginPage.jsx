@@ -9,6 +9,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
+
+	const URL = import.meta.env.VITE_URL
+
+
 	const [formData, setFormData] = useState({
 		username: "",
 		password: "",
@@ -19,11 +23,13 @@ const LoginPage = () => {
 	const { mutate: loginMutation, isError, isPending, error } = useMutation({
 		mutationFn: async ({ username, password }) => {
 			try {
-		  const res = await fetch("/api/auth/login", {
+		  const res = await fetch(`${URL}/api/auth/login`, {
 			method: "POST",
+			credentials:"include",
 			headers: {
 			  "Content-Type": "application/json",
 			},
+			
 			body: JSON.stringify({ username, password }),
 		  });
 	  

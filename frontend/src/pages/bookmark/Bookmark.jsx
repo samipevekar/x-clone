@@ -4,12 +4,15 @@ import Post from '../../components/common/Post'
 import PostSkeleton from '../../components/skeletons/PostSkeleton';
 
 export default function Bookmark() {
+
+    const URL = import.meta.env.VITE_URL
+
     // Fetch bookmark posts using react-query
     const { data: bookmarkPosts, isLoading, isPending, refetch, isRefetching } = useQuery({
         queryKey: ['bookmarkPosts'],
         queryFn: async () => {
             try {
-                const res = await fetch(`/api/posts/bookmarks`);
+                const res = await fetch(`${URL}/api/posts/bookmarks`,{credentials:"include"});
                 const data = await res.json();
     
                 if (!res.ok) {

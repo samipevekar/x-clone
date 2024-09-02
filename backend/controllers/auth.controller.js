@@ -106,16 +106,23 @@ export const login = async(req, res) => {
 };
 
 // Logout controller
-export const logout = async(req, res) => {
+export const logout = async (req, res) => {
     try {
-        // Clear the JWT cookie
-        res.cookie("jwt", "", { maxAge: 0 });
+        // Clear the JWT cookie with the same options as when it was set
+        res.clearCookie("jwt", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None", 
+        });
+        
+        
         res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
         console.log("Error in logout controller", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 
 // Get current user (profile) controller
 export const getMe = async(req, res) => {

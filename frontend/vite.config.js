@@ -8,12 +8,12 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    proxy: {
-      "/api": {
-        // target: "https://x-backend-ujvu.onrender.com",
-        target: "http://localhost:8080",
-        changeOrigin: true
-      }
-    }
+    // proxy: {
+    //   "/api": {
+    //     // target: "https://x-backend-ujvu.onrender.com",
+    //     target: "http://localhost:8080",
+    //     changeOrigin: true
+    //   }
+    // }
   }
 })

@@ -9,16 +9,17 @@ import toast from 'react-hot-toast';
 
 const UserStoryModal = ({ id, story, onClose, storyId}) => {
 
+  const URL = import.meta.env.VITE_URL
+
   const queryClient = useQueryClient()
 
   const {data:authUser} = useQuery({queryKey:["authUser"]})
 
-
-
   const {mutate:deleteStory,isPending} = useMutation({
     mutationFn:async(id)=>{
-      const res = await fetch(`/api/story/stories/${id}`,{
+      const res = await fetch(`${URL}/api/story/stories/${id}`,{
         method: 'DELETE',
+        credentials:"include",
       })
 
       const data = await res.json()
@@ -45,7 +46,7 @@ const UserStoryModal = ({ id, story, onClose, storyId}) => {
 
   return (
     <dialog id={id} className="modal">
-      <div className="modal-box h-full border bg-slate-500 rounded w-[400px] relative">
+      <div className="modal-box h-full max-sm:w-[380px] border bg-slate-500 rounded w-[400px] relative">
         <form method="dialog" className='absolute right-3 top-2.5'>
           {/* Close button */}
           <button

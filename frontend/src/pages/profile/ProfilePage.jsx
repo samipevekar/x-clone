@@ -20,6 +20,9 @@ import StoryModal from "../../components/common/StoryPage";
 import UserStoryModal from "../../components/common/UserStoryModal";
 
 const ProfilePage = () => {
+
+	const URL = import.meta.env.VITE_URL
+
 	const [coverImg, setCoverImg] = useState(null);
 	const [profileImg, setProfileImg] = useState(null);
 	const [feedType, setFeedType] = useState("posts");
@@ -45,7 +48,7 @@ const ProfilePage = () => {
 		queryKey: ["userProfile"],
 		queryFn: async () => {
 			try {
-				const res = await fetch(`/api/users/profile/${username}`);
+				const res = await fetch(`${URL}/api/users/profile/${username}`,{credentials:"include"});
 				const data = await res.json();
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
@@ -80,7 +83,7 @@ const ProfilePage = () => {
 		queryKey: ["userStory"],
 		queryFn: async () => {
 			try {
-				const res = await fetch(`/api/story/userstory/${user?._id}`)
+				const res = await fetch(`${URL}/api/story/userstory/${user?._id}`,{credentials:"include"})
 				const data = await res.json();
 				if (!res.ok) {
 					throw new Error(data.message || "Failed to fetch user story");
@@ -123,14 +126,14 @@ const ProfilePage = () => {
 								</Link>
 								<div className='flex flex-col'>
 									<p className='font-bold text-lg'>{user?.fullName}</p>
-									<span className='text-sm text-slate-500'>{posts.length} posts</span>
+									<span className='text-sm text-slate-500'>{posts?.length} posts</span>
 								</div>
 							</div>
 							{/* COVER IMG */}
 							<div className='relative group/cover'>
 								<img
 									src={coverImg || user?.coverImg || "/cover.png"}
-									className='h-52 w-full object-cover'
+									className='h-52 max-sm:h-32 w-full object-cover'
 									alt='cover image'
 								/>
 								{isMyProfile && (
@@ -158,7 +161,7 @@ const ProfilePage = () => {
 								/>
 								{/* USER AVATAR */}
 								<div className={`avatar absolute -bottom-16 left-4 ${userStory?.length > 0 ? "border-[3px] p-[3px] rounded-full border-primary" : ""} `}>
-									<div className={`w-32 rounded-full cursor-pointer relative group/avatar `} >
+									<div className={`w-32 max-sm:w-20 rounded-full cursor-pointer relative group/avatar `} >
 										<img onClick={() => document.getElementById('user_story_modal').showModal()} src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
 										{isMyProfile && (<div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
 											
@@ -234,12 +237,11 @@ const ProfilePage = () => {
 											<>
 												<FaLink className='w-3 h-3 text-slate-500' />
 												<a
-													href='https://youtube.com/@asaprogrammer_'
+													href={user?.link}
 													target='_blank'
 													rel='noreferrer'
 													className='text-sm text-blue-500 hover:underline'
 												>
-													{/* Updated this after recording the video. I forgot to update this while recording, sorry, thx. */}
 													{user?.link}
 												</a>
 											</>

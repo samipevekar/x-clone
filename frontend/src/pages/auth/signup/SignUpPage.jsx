@@ -11,6 +11,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast";
 
 const SignUpPage = () => {
+
+	const URL = import.meta.env.VITE_URL
+
 	const [formData, setFormData] = useState({
 		email: "",
 		username: "",
@@ -23,8 +26,9 @@ const SignUpPage = () => {
 	const {mutate:signupMutation,isError,isPending,error} = useMutation({
 		mutationFn:async({email,username,fullName,password})=>{
 			try {
-				const res = await fetch("/api/auth/signup",{
+				const res = await fetch(`${URL}/api/auth/signup`,{
 					method: "POST",
+					credentials:"include",
 					headers: {
 						"Content-Type": "application/json",
 					},

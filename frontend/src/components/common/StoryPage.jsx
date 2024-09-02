@@ -5,6 +5,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { IoMdImage } from "react-icons/io";
 
 export default function StoryModal({ isOpen, onClose }) {
+
+    const URL = import.meta.env.VITE_URL
+
     const [text, setText] = useState("");
     const [img, setImg] = useState(null);
     const storyRef = useRef(null)
@@ -15,8 +18,9 @@ export default function StoryModal({ isOpen, onClose }) {
     const { mutate: createStory, isPending, isError, error } = useMutation({
         mutationFn: async ({ text, img }) => {
             try {
-                const res = await fetch("/api/story/create", {
+                const res = await fetch(`${URL}/api/story/create`, {
                     method: "POST",
+                    credentials:"include",
                     headers: {
                         'Content-Type': "application/json",
                     },

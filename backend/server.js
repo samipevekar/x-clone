@@ -26,16 +26,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsConfig = {
-    origin: ["https://x-frontend-8xv0.onrender.com", "*", "https://x-frontend-8kh3.onrender.com", "http://localhost:5173", "http://localhost:3000"],
+    origin: ["https://x-frontend-kuz7.onrender.com","http://localhost:5173", "http://localhost:3000"],
     methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     credentials: true
+    
 };
 
 app.use(cors(corsConfig));
 
-app.options("", cors(corsConfig));
-
-app.use(express.json({ limit: "5mb" })); // to parse req.body
+app.use(express.json({ limit: "20mb" })); // to parse req.body
 app.use(express.urlencoded({ extended: true })); // to parse form data
 
 app.use(cookieParser());
@@ -52,20 +51,29 @@ app.use("/api/story", storyRoutes);
 
 // Schedule a task to run daily at midnight to delete expired stories and their associated images
 cron.schedule('0 0 * * *', async () => {
+    console.log('Running a task daily at midnight to clean up expired stories');
     try {
-        const expiredStories = await Story.find({ expiresAt: { $lte: Date.now() } });
-        
+        // Get the current time
+        const now = Date.now();
+
+        // Find all expired stories
+        const expiredStories = await Story.find({ expiresAt: { $lt: now } });
+
+        // Loop through each expired story
         for (const story of expiredStories) {
+            // If the story has an image, delete it from Cloudinary
             if (story.img) {
                 const imgId = story.img.split("/").pop().split(".")[0];
                 await cloudinary.uploader.destroy(imgId);
             }
+
+            // Delete the story from the database
             await Story.findByIdAndDelete(story._id);
         }
-        
-        console.log(`${expiredStories.length} expired stories deleted.`);
+
+        console.log('Expired stories cleaned up successfully');
     } catch (error) {
-        console.error("Error deleting expired stories:", error);
+        console.error('Error cleaning up expired stories:', error);
     }
 });
 

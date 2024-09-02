@@ -10,6 +10,9 @@ import { BiPlus } from "react-icons/bi";
 import StoryModal from './StoryPage';
 
 export default function Stories() {
+
+    const URL = import.meta.env.VITE_URL
+
     const [selectedStory, setSelectedStory] = useState(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,7 +24,7 @@ export default function Stories() {
         queryKey: ["followingStories"],
         queryFn: async () => {
             try {
-                const res = await fetch("/api/story/followingstories");
+                const res = await fetch(`${URL}/api/story/followingstories`,{credentials:"include"});
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.message || "Something went wrong");
@@ -41,7 +44,7 @@ export default function Stories() {
         queryKey: ["userStory"],
         queryFn: async () => {
             try {
-                const res = await fetch(`/api/story/mystory/`)
+                const res = await fetch(`${URL}/api/story/mystory/`,{credentials:"include"})
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.message || "Failed to fetch user story");
@@ -68,11 +71,11 @@ export default function Stories() {
 
     return (
         <>
-            <div className='flex gap-3 p-4 border-b border-gray-700 cursor-pointer overflow-auto max-w-[320px] sm:max-w-[650px] md:max-w-[700px] lg:max-w-full'>
+            <div className='flex gap-3 p-4 border-b border-gray-700 cursor-pointer overflow-auto max-w-[350px] sm:max-w-[650px] md:max-w-[700px] lg:max-w-full'>
 
 
 
-                {myStory.length > 0 && myStory ?
+                {myStory?.length > 0 && myStory ?
                     (
                         myStory.map((story) => {
                             return (
