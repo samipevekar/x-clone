@@ -200,3 +200,36 @@ export const getFollowingUser = async(req,res)=>{
         console.log("error in getFollowingUser function",error)
     }
 }
+
+
+// search user
+export const searchUser = async(req, res) => {
+    try {
+        const { user } = req.query;
+        
+        if (!user) {
+            return res.status(400).json({ error: "Query parameter is required" });
+        }
+
+        // MongoDB Atlas Search Aggregation Pipeline
+        const users = await User.aggregate([
+            {
+                '$search': {
+                    'index': "search-user", // The name of your Atlas Search index
+                    'text': {
+                        'query': user,
+                        'path': {
+                           'wildcard': "*" // Search in all fields
+                        }
+                    }
+                }
+            }
+        ]);
+
+        res.json(users);
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        console.log("Error in searchUser function", error);
+    }
+}
