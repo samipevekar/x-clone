@@ -7,39 +7,42 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-const UserStoryModal = ({ id, story, onClose, storyId}) => {
+const UserStoryModal = ({ id, story, onClose, storyId }) => {
 
   const URL = import.meta.env.VITE_URL
 
   const queryClient = useQueryClient()
 
-  const {data:authUser} = useQuery({queryKey:["authUser"]})
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] })
 
-  const {mutate:deleteStory,isPending} = useMutation({
-    mutationFn:async(id)=>{
-      const res = await fetch(`${URL}/api/story/stories/${id}`,{
+  const { mutate: deleteStory, isPending } = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`${URL}/api/story/stories/${id}`, {
         method: 'DELETE',
-        credentials:"include",
+        headers: {
+          "auth-token": localStorage.getItem("auth-token")
+        },
+        credentials: "include",
       })
 
       const data = await res.json()
-      if(!res.ok){
+      if (!res.ok) {
         throw new Error(data.message || "Something went wrong")
       }
 
       return data
     },
-    onSuccess:()=>{
+    onSuccess: () => {
       toast.success("Story deleted successfully")
-      queryClient.invalidateQueries({queryKey:["userStory"]})
+      queryClient.invalidateQueries({ queryKey: ["userStory"] })
       onClose(id)
 
     }
 
   })
 
-  const handleStoryDelete = ()=>{
-    if(isPending) return 
+  const handleStoryDelete = () => {
+    if (isPending) return
     deleteStory(storyId)
   }
 
@@ -61,7 +64,7 @@ const UserStoryModal = ({ id, story, onClose, storyId}) => {
         {story?.user?._id === authUser?._id && <div className='dropdown absolute right-20 top-5.5 '>
           <div tabIndex={0} role="button" className='absolute right-5 top-5.5  rounded cursor-pointer'><BsThreeDotsVertical className='text-white' /></div>
           <ul tabIndex={0} className="absolute right-20 top-5.5  dropdown-content menu bg-white w-fit  z-[1] rounded p-2 shadow">
-            <div className='flex gap-1 items-center w-fit cursor-pointer text-black font-semibold'  onClick={handleStoryDelete}><RiDeleteBin6Fill className='text-red-500' />{isPending ? "Deleting..." : "Delete"}</div>
+            <div className='flex gap-1 items-center w-fit cursor-pointer text-black font-semibold' onClick={handleStoryDelete}><RiDeleteBin6Fill className='text-red-500' />{isPending ? "Deleting..." : "Delete"}</div>
           </ul>
         </div>}
 
@@ -69,14 +72,14 @@ const UserStoryModal = ({ id, story, onClose, storyId}) => {
 
         <Link to={`/profile/${story?.user.username}`}>
           <div className='flex items-center gap-2 absolute top-4'>
-            <img className='w-8 h-8 rounded-full' src={story?.user.profileImg || '/avatar-placeholder.png'} alt="" />
+            <img className='w-8 h-8 rounded-full' src={story?.user.profileImg || '/avatar-placeholder.png'} alt="" loading='lazy' />
             <p className='text-white font-semibold'>{story?.user.username}</p>
             <p>{formatPostDate(story?.createdAt)}</p>
           </div>
         </Link>
         {<div className='mt-[50px] '>
           {story?.img ? (
-            <img className='w-full h-[450px] object-contain ' src={story?.img} alt="User Story" />
+            <img className='w-full h-[450px] object-contain ' src={story?.img} alt="User Story" loading='lazy' />
           ) : (
             <p className='text-[18px] break-words'>{story?.text}</p>
           )}

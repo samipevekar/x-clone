@@ -1,9 +1,9 @@
-import { generateTokenAndSetCookie } from "../lib/utils/generateToken.js"; 
-import User from "../models/user.model.js"; 
-import bcrypt from 'bcryptjs'; 
+import User from "../models/user.model.js";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken'
 
 // Signup controller
-export const signup = async(req, res) => {
+export const signup = async (req, res) => {
     try {
         const { fullName, username, email, password } = req.body;
 
@@ -36,19 +36,23 @@ export const signup = async(req, res) => {
 
         // Create new user instance
         const newUser = new User({
-            fullName: fullName,
-            username: username,
-            email: email,
+            fullName,
+            username,
+            email,
             password: hashPassword
         });
 
-        if (newUser) {
-            // Generate token and set it as a cookie
-            generateTokenAndSetCookie(newUser._id, res);
-            await newUser.save();  // Save the new user to the database
+        await newUser.save(); // Save the new user to the database
 
-            // Respond with the newly created user details (excluding password)
-            res.status(201).json({
+        // Generate token
+        const userId = newUser._id
+        const token = jwt.sign({ _id: newUser._id }, process.env.JWT_SECRET);
+        // Change this to return token instead of setting cookie
+
+        // Respond with the token and user details
+        res.status(201).json({
+            token,
+            user: {
                 _id: newUser._id,
                 fullName: newUser.fullName,
                 username: newUser.username,
@@ -57,10 +61,8 @@ export const signup = async(req, res) => {
                 following: newUser.following,
                 profileImg: newUser.profileImg,
                 coverImg: newUser.coverImg
-            });
-        } else {
-            res.status(400).json({ error: "Invalid user data" });
-        }
+            }
+        });
 
     } catch (error) {
         console.log("Error in signup controller", error);
@@ -68,8 +70,9 @@ export const signup = async(req, res) => {
     }
 };
 
+
 // Login controller
-export const login = async(req, res) => {
+export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -82,22 +85,25 @@ export const login = async(req, res) => {
             return res.status(400).json({ error: "Invalid username or password" });
         }
 
-        // Generate token and set it as a cookie
-        generateTokenAndSetCookie(user._id, res);
+        // Generate token
+        const userId = user._id
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-        // Respond with the user details (excluding password)
+
+        // Respond with the token and user details
         res.status(200).json({
-            _id: user._id,
-            fullName: user.fullName,
-            username: user.username,
-            email: user.email,
-            followers: user.followers,
-            following: user.following,
-            profileImg: user.profileImg,
-            coverImg: user.coverImg
+            token,
+            user: {
+                _id: user._id,
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email,
+                followers: user.followers,
+                following: user.following,
+                profileImg: user.profileImg,
+                coverImg: user.coverImg
+            }
         });
-
-
 
     } catch (error) {
         console.log("Error in login controller", error);
@@ -108,21 +114,13 @@ export const login = async(req, res) => {
 // Logout controller
 export const logout = async (req, res) => {
     try {
-        // Clear the JWT cookie with the same options as when it was set
-        res.clearCookie("jwt", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "None", 
-        });
-        
-        
+        // Inform the client to remove the token
         res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
         console.log("Error in logout controller", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
 
 // Get current user (profile) controller
 export const getMe = async(req, res) => {

@@ -14,13 +14,18 @@ const NotificationPage = () => {
 
 	const queryClient = useQueryClient()
 
-	const {data:notifications, isLoading} = useQuery({
-		queryKey: ["notifications"], 
-		queryFn: async()=>{
+	const { data: notifications, isLoading } = useQuery({
+		queryKey: ["notifications"],
+		queryFn: async () => {
 			try {
-				const res = await fetch(`${URL}/api/notifications`,{credentials:"include"});
+				const res = await fetch(`${URL}/api/notifications`, {
+					headers: {
+						"auth-token": localStorage.getItem("auth-token")
+					},
+					credentials: "include"
+				});
 				const data = res.json()
-				if(!res.ok){
+				if (!res.ok) {
 					throw new Error(data.message || "Something went wrong")
 				}
 				return data
@@ -28,18 +33,21 @@ const NotificationPage = () => {
 				throw new Error(error)
 			}
 		}
-		
+
 	})
 
-	const {mutate:deleteNotifications} = useMutation({
-		mutationFn: async()=>{
+	const { mutate: deleteNotifications } = useMutation({
+		mutationFn: async () => {
 			try {
-				const res = await fetch(`${URL}/api/notifications`,{
+				const res = await fetch(`${URL}/api/notifications`, {
 					method: 'DELETE',
-					credentials:"include",
+					headers: {
+						"auth-token": localStorage.getItem("auth-token")
+					},
+					credentials: "include",
 				})
 				const data = await res.json()
-				if(!res.ok){
+				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong")
 				}
 				return data
@@ -47,21 +55,20 @@ const NotificationPage = () => {
 				throw new Error(error)
 			}
 		},
-		onSuccess: ()=>{
+		onSuccess: () => {
 			toast.success("notification deleted successfully")
-			queryClient.invalidateQueries({queryKey:["notifications"]})
-			
+			queryClient.invalidateQueries({ queryKey: ["notifications"] })
+
 		},
-		onError: (error)=>{
+		onError: (error) => {
 			toast.error(error.message)
 		}
 	})
 
-	const {data:authUser} = useQuery({queryKey:["authUser"]})
 
-	
 
-	
+
+
 
 	return (
 		<>
@@ -77,7 +84,7 @@ const NotificationPage = () => {
 							className='dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52'
 						>
 							<li>
-								<a onClick={deleteNotifications}>Delete all notifications</a>
+								<button disabled={notifications?.length===0} onClick={deleteNotifications} >Delete all notifications</button>
 							</li>
 						</ul>
 					</div>
@@ -97,13 +104,14 @@ const NotificationPage = () => {
 							<Link to={`/profile/${notification.from.username}`}>
 								<div className='avatar'>
 									<div className='w-8 rounded-full'>
-										<img src={notification.from.profileImg || "/avatar-placeholder.png"} />
+										<img src={notification.from.profileImg || "/avatar-placeholder.png"}
+											loading="lazy" />
 									</div>
 								</div>
 								<div className='flex gap-1'>
 									<span className='font-bold'>@{notification.from.username}</span>{" "}
-									{notification.type  === "follow" && "followed you" }
-									{notification.type  === "like" && "liked your post"}
+									{notification.type === "follow" && "followed you"}
+									{notification.type === "like" && "liked your post"}
 									{notification.type === "comment" && "comment on your post"}
 								</div>
 							</Link>

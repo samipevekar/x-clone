@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 
-import XSvg from "../../../components/svgs/X";
+const XSvg = lazy(()=>import("../../../components/svgs/X")) ;
 
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 
 const LoginPage = () => {
 
@@ -35,6 +34,7 @@ const LoginPage = () => {
 	  
 		  	const data = await res.json();
 			if (!res.ok) throw new Error(data.error || "Failed to login");
+			localStorage.setItem("auth-token",data.token)
 			return data;
 			
 		  } catch (error) {
@@ -60,7 +60,7 @@ const LoginPage = () => {
 	return (
 		<div className='max-w-screen-xl mx-auto flex h-screen'>
 			<div className='flex-1 hidden lg:flex items-center  justify-center'>
-				<XSvg className='lg:w-2/3 fill-white' />
+			<Suspense fallback={<></>}><XSvg className=' lg:w-2/3 fill-white' /></Suspense> 
 			</div>
 			<div className='flex-1 flex flex-col justify-center items-center'>
 				<form className='flex gap-4 flex-col' onSubmit={handleSubmit}>

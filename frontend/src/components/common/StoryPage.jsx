@@ -20,9 +20,10 @@ export default function StoryModal({ isOpen, onClose }) {
             try {
                 const res = await fetch(`${URL}/api/story/create`, {
                     method: "POST",
-                    credentials:"include",
+                    credentials: "include",
                     headers: {
                         'Content-Type': "application/json",
+                        "auth-token": localStorage.getItem("auth-token")
                     },
                     body: JSON.stringify({ text, img })
                 });
@@ -42,8 +43,8 @@ export default function StoryModal({ isOpen, onClose }) {
             setText("");
             setImg(null);
             toast.success("Story created successfully");
-            queryClient.invalidateQueries({queryKey:["userProfile"]})
-            queryClient.invalidateQueries({queryKey:["userStory"]})
+            queryClient.invalidateQueries({ queryKey: ["userProfile"] })
+            queryClient.invalidateQueries({ queryKey: ["userStory"] })
             onClose(false)
         }
     });
@@ -135,13 +136,14 @@ export default function StoryModal({ isOpen, onClose }) {
                                 onChange={handleImageChange}
                                 className="w-full mb-4"
                             />
-                            <div className='text-[15px] m-auto w-fit cursor-pointer bg-primary text-white p-1 rounded my-4 ' onClick={(e)=>storyRef.current.click()} ><IoMdImage/></div>
+                            <div className='text-[15px] m-auto w-fit cursor-pointer bg-primary text-white p-1 rounded my-4 ' onClick={(e) => storyRef.current.click()} ><IoMdImage /></div>
                             {img && (
                                 <div className="w-full mb-4 flex justify-center">
                                     <img
                                         src={img}
                                         alt="Preview"
                                         className="max-w-full h-[250px] rounded-lg border border-gray-300"
+                                        loading='lazy'
                                     />
                                 </div>
                             )}
@@ -149,9 +151,8 @@ export default function StoryModal({ isOpen, onClose }) {
                     )}
                     <button
                         type="submit"
-                        className={`w-full mt-auto py-2 rounded-lg text-white ${
-                            isPending ? 'bg-gray-500' : 'bg-primary hover:bg-blue-700'
-                        }`}
+                        className={`w-full mt-auto py-2 rounded-lg text-white ${isPending ? 'bg-gray-500' : 'bg-primary hover:bg-blue-700'
+                            }`}
                         disabled={isPending}
                     >
                         {isPending ? 'Uploading...' : 'Upload'}

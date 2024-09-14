@@ -13,47 +13,48 @@ const CreatePost = () => {
 	const [img, setImg] = useState(null);
 	const imgRef = useRef(null);
 
-	const {data:authUser} = useQuery({queryKey:["authUser"]});
+	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 	const queryClient = useQueryClient();;
 
-	const {mutate:createPost,isPending,isError,error} = useMutation({
-		mutationFn: async({text,img}) =>{
+	const { mutate: createPost, isPending, isError, error } = useMutation({
+		mutationFn: async ({ text, img }) => {
 			try {
-				const res = await fetch(`${URL}/api/posts/create`,{
-					method:"POST",
-					credentials:"include",
-					headers:{
+				const res = await fetch(`${URL}/api/posts/create`, {
+					method: "POST",
+					credentials: "include",
+					headers: {
 						'Content-Type': "application/json",
+						"auth-token": localStorage.getItem("auth-token")
 					},
-					body: JSON.stringify({text,img})
+					body: JSON.stringify({ text, img })
 				})
 				const data = await res.json();
 
-				if(!res.ok){
+				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
 				}
 
 				return data
-				
+
 			} catch (error) {
 				throw new Error(error)
 			}
 		},
-		onSuccess: ()=>{
+		onSuccess: () => {
 			setText("")
 			setImg("")
 			toast.success("Post created successfully")
-			queryClient.invalidateQueries({queryKey:["posts"]})
+			queryClient.invalidateQueries({ queryKey: ["posts"] })
 		}
 	})
 
 
 
-	
+
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		createPost({text,img})
+		createPost({ text, img })
 	};
 
 	const handleImgChange = (e) => {
@@ -77,11 +78,11 @@ const CreatePost = () => {
 			<form className='flex flex-col gap-2 w-full' onSubmit={handleSubmit}>
 				<textarea
 					className='textarea w-full p-0 text-lg resize-none border-none focus:outline-none  border-gray-800'
-					placeholder='What is happening?!'
+					placeholder='What is happening?'
 					value={text}
 					onChange={(e) => setText(e.target.value)}
 				/>
-				
+
 				{img && (
 					<div className='relative w-72 mx-auto'>
 						<IoCloseSharp
@@ -91,7 +92,7 @@ const CreatePost = () => {
 								imgRef.current.value = null;
 							}}
 						/>
-						<img src={img} className='w-full mx-auto h-72 object-contain rounded' />
+						<img src={img} className='w-full mx-auto h-72 object-contain rounded' loading="lazy" />
 					</div>
 				)}
 

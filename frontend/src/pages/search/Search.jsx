@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { FiSearch } from "react-icons/fi";
-import SearchUser from './SearchUser';
 import { useQuery } from '@tanstack/react-query';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { Link } from 'react-router-dom';
+
+import SearchUser from "./SearchUser";
 
 export default function Search() {
     const URL = import.meta.env.VITE_URL;
@@ -27,7 +27,12 @@ export default function Search() {
         queryFn: async () => {
             if (!debouncedSearch) return []; // Return empty if search is empty
             try {
-                const res = await fetch(`${URL}/api/users/search?user=${debouncedSearch}`, { credentials: "include" });
+                const res = await fetch(`${URL}/api/users/search?user=${debouncedSearch}`, {
+                    headers:{
+                        "auth-token":localStorage.getItem("auth-token")
+                    },
+                     credentials: "include"
+                     });
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.error || "Something went wrong");
@@ -47,13 +52,13 @@ export default function Search() {
     };
 
     return (
-        <div className='flex-[4_4_0] border-r border-gray-700 min-h-screen p-4'>
+        <div className='flex-[4_4_0] border-r border-gray-700 min-h-screen p-2 pt-4'>
             <div className='flex flex-col justify-center items-center'>
                 <form className='flex items-center gap-2' onSubmit={handleSearch}>
                     <input
                         type="text"
                         placeholder="Search"
-                        className="input rounded-full input-bordered w-[600px] max-w-[600px] max-sm:max-w-[280px]"
+                        className="input rounded-full input-bordered w-[600px] max-w-[600px] max-sm:max-w-[270px]"
                         onChange={(e) => setSearch(e.target.value)}
                         value={search}
                     />
@@ -77,7 +82,7 @@ export default function Search() {
                 {searches && searches.length > 0 && (
                     searches.map((user) => (
                         <SearchUser
-                            key={user?._id} 
+                            key={user._id}
                             profileImg={user?.profileImg}
                             username={user?.username}
                             fullName={user?.fullName}

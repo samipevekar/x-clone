@@ -2,9 +2,17 @@
 <html lang="en" data-theme="black">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/x-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>X clone</title>
+
+    <!-- Preload fonts if you are using custom fonts -->
+    <link rel="preload" href="/path/to/font.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <!-- Link to your Tailwind CSS file (for reference in production) -->
+    <!-- In practice, Vite should handle this automatically -->
+    <link rel="stylesheet" href="/dist/style.css">
+
   </head>
   <body>
     <div id="root"></div>

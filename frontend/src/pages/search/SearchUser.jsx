@@ -6,7 +6,7 @@ export default function SearchUser({profileImg,fullName,username}) {
     
     <Link to={`/profile/${username}`} className='flex gap-2 p-2 h-fit my-2 hover:bg-gray-800 w-full cursor-pointer'>
       <div>
-        <img src={profileImg || '/avatar-placeholder.png'} className='w-12 h-12 rounded-full' />
+        <img src={profileImg || '/avatar-placeholder.png'} className='w-12 h-12 rounded-full' loading='lazy' />
       </div>
       <div>
         <p className='text-[16px] font-bold'>{fullName}</p>

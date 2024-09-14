@@ -15,8 +15,6 @@ const Post = ({ post }) => {
 
 	const URL = import.meta.env.VITE_URL
 
-	
-
 
 	const [comment, setComment] = useState("");
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -39,7 +37,13 @@ const Post = ({ post }) => {
 	// Handle delete post
 	const { mutate: deletePost, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`${URL}/api/posts/${post._id}`, { method: "DELETE", credentials:"include" });
+			const res = await fetch(`${URL}/api/posts/${post._id}`, {
+				method: "DELETE",
+				headers: {
+					"auth-token": localStorage.getItem("auth-token")
+				},
+				credentials: "include"
+			},);
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -56,7 +60,14 @@ const Post = ({ post }) => {
 	// Handle like post
 	const { mutate: likePost, isPending: isLiking } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`${URL}/api/posts/like/${originalPost._id}`, { method: "POST", credentials:"include" });
+			const res = await fetch(`${URL}/api/posts/like/${originalPost._id}`, {
+				method: "POST",
+				headers: {
+					"auth-token": localStorage.getItem("auth-token")
+				},
+				credentials: "include"
+
+			},);
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -83,8 +94,11 @@ const Post = ({ post }) => {
 		mutationFn: async () => {
 			const res = await fetch(`${URL}/api/posts/comment/${originalPost._id}`, {
 				method: "POST",
-				credentials:"include",
-				headers: { "Content-Type": "application/json" },
+				credentials: "include",
+				headers: {
+					"Content-Type": "application/json",
+					"auth-token": localStorage.getItem("auth-token")
+				},
 				body: JSON.stringify({ text: comment }),
 			});
 			const data = await res.json();
@@ -105,7 +119,13 @@ const Post = ({ post }) => {
 	// Handle bookmark post
 	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`${URL}/api/posts/bookmark/${originalPost._id}`, { method: "POST",credentials:"include", });
+			const res = await fetch(`${URL}/api/posts/bookmark/${originalPost._id}`, {
+				method: "POST",
+				headers: {
+					"auth-token": localStorage.getItem("auth-token")
+				},
+				credentials: "include",
+			});
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -133,7 +153,13 @@ const Post = ({ post }) => {
 	// Handle repost
 	const { mutate: repostPost, isPending: isReposting } = useMutation({
 		mutationFn: async () => {
-			const res = await fetch(`${URL}/api/posts/repost/${post._id}`, { method: "POST" ,credentials:"include"});
+			const res = await fetch(`${URL}/api/posts/repost/${post._id}`, {
+				method: "POST",
+				headers: {
+					"auth-token": localStorage.getItem("auth-token")
+				},
+				credentials: "include"
+			});
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -185,7 +211,7 @@ const Post = ({ post }) => {
 				{repost && <div className="absolute top-2 text-gray-400 font-bold flex items-center gap-2 text-[13px]"><BiRepost className="text-[18px]" /> {repostedByMe ? "You" : post.user.username} reposted</div>}
 				<div className='avatar'>
 					<Link to={`/profile/${postOwner.username}`} className='w-8 h-8 rounded-full overflow-hidden'>
-						<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+						<img src={postOwner.profileImg || "/avatar-placeholder.png"} loading="lazy" />
 					</Link>
 				</div>
 				<div className='flex flex-col flex-1'>
@@ -201,7 +227,7 @@ const Post = ({ post }) => {
 
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
-								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={()=>document.getElementById('my_modal_1').showModal()} />}
+								{!isDeleting && <FaTrash className='cursor-pointer hover:text-red-500' onClick={() => document.getElementById('my_modal_1').showModal()} />}
 								{isDeleting && (
 									<LoadingSpinner size="sm" />
 								)}
@@ -230,7 +256,7 @@ const Post = ({ post }) => {
 							<img
 								src={repost ? originalPost.img : post.img}
 								className='h-80 object-contain rounded-lg border border-gray-700'
-								alt=''
+								alt='' loading="lazy"
 							/>
 						)}
 					</div>
@@ -260,7 +286,7 @@ const Post = ({ post }) => {
 												<div className='avatar'>
 													<div className='w-8 rounded-full'>
 														<img
-															src={comment.user.profileImg || "/avatar-placeholder.png"}
+															src={comment.user.profileImg || "/avatar-placeholder.png"} loading="lazy"
 														/>
 													</div>
 												</div>

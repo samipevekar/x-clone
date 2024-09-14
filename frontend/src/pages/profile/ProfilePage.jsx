@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
-import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
-import EditProfileModal from "./EditProfileModal";
+import useFollow from "../../hooks/useFollow";
+import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
+import Posts from "../../components/common/Posts";
 
-
+const EditProfileModal = lazy(() => import("./EditProfileModal"));
+const StoryModal = lazy(() => import("../../components/common/StoryPage"));
+const UserStoryModal = lazy(() => import("../../components/common/UserStoryModal"));
 
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
@@ -14,10 +16,6 @@ import { MdEdit } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate, formatPostDate } from "../../utils/date";
 
-import useFollow from "../../hooks/useFollow";
-import useUpdateUserProfile from "../../hooks/useUpdateUserProfile";
-import StoryModal from "../../components/common/StoryPage";
-import UserStoryModal from "../../components/common/UserStoryModal";
 
 const ProfilePage = () => {
 
@@ -29,7 +27,7 @@ const ProfilePage = () => {
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	const{data:posts} = useQuery({queryKey:["posts"]})
+	const { data: posts } = useQuery({ queryKey: ["posts"] })
 
 	const coverImgRef = useRef(null);
 	const profileImgRef = useRef(null);
@@ -48,7 +46,12 @@ const ProfilePage = () => {
 		queryKey: ["userProfile"],
 		queryFn: async () => {
 			try {
-				const res = await fetch(`${URL}/api/users/profile/${username}`,{credentials:"include"});
+				const res = await fetch(`${URL}/api/users/profile/${username}`, {
+					headers:{
+						"auth-token":localStorage.getItem("auth-token")
+					},
+					 credentials: "include" 
+					});
 				const data = await res.json();
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
@@ -79,11 +82,16 @@ const ProfilePage = () => {
 	};
 
 	// to get user story
-	const { data: userStory, isLoading: isStoryLoading,refetch:userStoryFetch } = useQuery({
+	const { data: userStory, isLoading: isStoryLoading, refetch: userStoryFetch } = useQuery({
 		queryKey: ["userStory"],
 		queryFn: async () => {
 			try {
-				const res = await fetch(`${URL}/api/story/userstory/${user?._id}`,{credentials:"include"})
+				const res = await fetch(`${URL}/api/story/userstory/${user?._id}`, { 
+					headers:{
+						"auth-token":localStorage.getItem("auth-token")
+					},
+					credentials: "include" 
+				})
 				const data = await res.json();
 				if (!res.ok) {
 					throw new Error(data.message || "Failed to fetch user story");
@@ -94,7 +102,7 @@ const ProfilePage = () => {
 			}
 		},
 	});
-	
+
 
 	useEffect(() => {
 		refetch();
@@ -105,7 +113,7 @@ const ProfilePage = () => {
 		userStoryFetch(); // Refetch user stories when user changes
 	}, [user, userStoryFetch]);
 
-	const handleOnClose = ()=>{
+	const handleOnClose = () => {
 		document.getElementById('user_story_modal').close();
 	}
 
@@ -135,6 +143,7 @@ const ProfilePage = () => {
 									src={coverImg || user?.coverImg || "/cover.png"}
 									className='h-52 max-sm:h-32 w-full object-cover'
 									alt='cover image'
+									loading="lazy"
 								/>
 								{isMyProfile && (
 									<div
@@ -162,20 +171,20 @@ const ProfilePage = () => {
 								{/* USER AVATAR */}
 								<div className={`avatar absolute -bottom-16 left-4 ${userStory?.length > 0 ? "border-[3px] p-[3px] rounded-full border-primary" : ""} `}>
 									<div className={`w-32 max-sm:w-20 rounded-full cursor-pointer relative group/avatar `} >
-										<img onClick={() => document.getElementById('user_story_modal').showModal()} src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
+										<img onClick={() => document.getElementById('user_story_modal').showModal()} src={profileImg || user?.profileImg || "/avatar-placeholder.png"} loading="lazy" />
 										{isMyProfile && (<div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
-											
-												<MdEdit
-													className='w-4 h-4 text-white'
-													onClick={() => profileImgRef.current.click()}
-												/>
-											
+
+											<MdEdit
+												className='w-4 h-4 text-white'
+												onClick={() => profileImgRef.current.click()}
+											/>
+
 										</div>)}
 									</div>
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal authUser={authUser} />}
+								{isMyProfile && <Suspense fallback={<></>}><EditProfileModal authUser={authUser} /></Suspense>}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
@@ -209,18 +218,20 @@ const ProfilePage = () => {
 								>
 									Add Story
 								</button>
-								<StoryModal
-									isOpen={isModalOpen}
-									onClose={() => setIsModalOpen(false)}
+								<Suspense fallback={<></>}>
+									<StoryModal
+										isOpen={isModalOpen}
+										onClose={() => setIsModalOpen(false)}
 
-								/>
+									/>
+								</Suspense>
 
 							</div>}
 
 							{/* getting user story */}
 							{userStory && userStory.length > 0 && userStory.map((story) => {
 								return (
-									<UserStoryModal key={story._id} id='user_story_modal' story={story} onClose={handleOnClose} storyId={story._id}  />
+									<Suspense fallback={<></>}><UserStoryModal key={story._id} id='user_story_modal' story={story} onClose={handleOnClose} storyId={story._id} /></Suspense> 
 								)
 							})}
 
@@ -286,7 +297,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts feedType={feedType} username={username} userId={user?._id} />
+					<Suspense fallback={<></>}><Posts feedType={feedType} username={username} userId={user?._id} /></Suspense>
 				</div>
 			</div>
 

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 const Posts = ({ feedType, username, userId }) => {
 
 	const URL = import.meta.env.VITE_URL
-	
+
 	const getPostEndpoint = () => {
 		switch (feedType) {
 			case "forYou":
@@ -24,11 +24,16 @@ const Posts = ({ feedType, username, userId }) => {
 
 	const POST_ENDPOINT = getPostEndpoint();
 
-	const {data: posts,isLoading,refetch,isRefetching} = useQuery({
+	const { data: posts, isLoading, refetch, isRefetching } = useQuery({
 		queryKey: ["posts"],
 		queryFn: async () => {
 			try {
-				const res = await fetch(POST_ENDPOINT,{credentials:"include"});
+				const res = await fetch(POST_ENDPOINT, {
+					headers: {
+						"auth-token": localStorage.getItem("auth-token")
+					},
+					credentials: "include"
+				});
 				const data = await res.json();
 
 				if (!res.ok) {

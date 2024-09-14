@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { v2 as cloudinary } from "cloudinary";
 import cors from "cors";
 import cron from 'node-cron'; // Import node-cron for scheduling tasks
+import compression from 'compression'; 
 
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -33,6 +34,8 @@ const corsConfig = {
 };
 
 app.use(cors(corsConfig));
+
+app.use(compression());
 
 app.use(express.json({ limit: "20mb" })); // to parse req.body
 app.use(express.urlencoded({ extended: true })); // to parse form data

@@ -1,28 +1,26 @@
-import User from "../models/user.model.js";
-import jwt from "jsonwebtoken"
+import jwt from 'jsonwebtoken';
 
-export const protectRoute = async(req,res,next)=>{
+// Middleware to protect routes
+export const protectRoute = async (req, res, next) => {
+    // Get the token from the 'auth-token' header
+    const token = req.header('auth-token');
+    
+    // Check if no token is provided
+    if (!token) {
+        return res.status(401).send({ error: "Please authenticate using a valid token" });
+    }
+
     try {
-        const token = req.cookies.jwt
-        if(!token){
-            return res.status(401).json({error:"You are not logged in"})
-        }
-
-        const decoded = jwt.verify(token,process.env.JWT_SECRET)
-
-        if(!decoded){
-            return res.status(401).json({error:"Unauthorized: Invalid Token"})
-        }
-
-        const user = await User.findById(decoded.userId).select("-password")
-        if(!user){
-            return res.status(404).json({error:"User not found"})
-        }
-
-        req.user = user
+        // Verify the token
+        const data = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Add the user data to the request object
+        req.user = data
+        
+        // Proceed to the next middleware/route handler
         next();
     } catch (error) {
-        console.log("error in protectRoute",error)
-        res.status(500).json({error:"Internal Server Error"})
+        // If token is invalid, return an error
+        return res.status(401).send({ error: "Please authenticate using a valid token" });
     }
 }

@@ -1,4 +1,5 @@
 // Import necessary models and libraries
+import mongoose from "mongoose";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
@@ -76,7 +77,7 @@ export const getSuggestedUsers = async (req, res) => {
 
         // Aggregate and sample users who are not the current user and have not been followed by the current user
         const users = await User.aggregate([
-            { $match: { _id: { $ne: userId } } },
+            { $match: { _id: { $ne: new mongoose.Types.ObjectId(userId) } } },
             { $sample: { size: 10 } }
         ]);
 

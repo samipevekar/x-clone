@@ -12,9 +12,10 @@ const useUpdateUserProfile = () => {
 			try {
 				const res = await fetch(`${URL}/api/users/update`, {
 					method: "POST",
-					credentials:"include",
+					credentials: "include",
 					headers: {
 						"Content-Type": "application/json",
+						"auth-token": localStorage.getItem("auth-token")
 					},
 					body: JSON.stringify(formData),
 				});
