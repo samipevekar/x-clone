@@ -7,6 +7,7 @@ import cors from "cors";
 import cron from 'node-cron'; // Import node-cron for scheduling tasks
 import compression from 'compression'; 
 
+
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
@@ -14,6 +15,7 @@ import notificationRoutes from './routes/notification.route.js';
 import storyRoutes from "./routes/story.route.js";
 
 import Story from './models/story.model.js'; // Import Story model
+import axios from 'axios';
 
 dotenv.config();
 
@@ -52,33 +54,17 @@ app.use("/api/posts", postRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/story", storyRoutes);
 
-// Schedule a task to run daily at midnight to delete expired stories and their associated images
-cron.schedule('0 0 * * *', async () => {
-    console.log('Running a task daily at midnight to clean up expired stories');
+cron.schedule('*/4 * * * *', async () => {
     try {
-        // Get the current time
-        const now = Date.now();
-
-        // Find all expired stories
-        const expiredStories = await Story.find({ expiresAt: { $lt: now } });
-
-        // Loop through each expired story
-        for (const story of expiredStories) {
-            // If the story has an image, delete it from Cloudinary
-            if (story.img) {
-                const imgId = story.img.split("/").pop().split(".")[0];
-                await cloudinary.uploader.destroy(imgId);
-            }
-
-            // Delete the story from the database
-            await Story.findByIdAndDelete(story._id);
-        }
-
-        console.log('Expired stories cleaned up successfully');
+        const response = await axios.get(`${ 'https://x-backend-ujvu.onrender.com' || `http://localhost:${PORT}`}/`, {
+            family: 4  // Force IPv4
+        });
+        console.log('Pinged the server:', response.data);
     } catch (error) {
-        console.error('Error cleaning up expired stories:', error);
+        console.error('Error pinging the server:', error.message);
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
