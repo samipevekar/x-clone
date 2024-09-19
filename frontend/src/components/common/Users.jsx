@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-export default function SearchUser({profileImg,fullName,username}) {
+export default function Users({profileImg,fullName,username}) {
   return (
     
     <Link to={`/profile/${username}`} className='flex gap-2 p-2 h-fit my-2 hover:bg-gray-800 w-full cursor-pointer'>

@@ -11,7 +11,7 @@ export const getUserProfile = async (req, res) => {
 
     try {
         // Find the user by username and exclude password from the result
-        const user = await User.findOne({ username }).select("-password");
+        const user = await User.findOne({ username }).populate("followers","username fullName profileImg").populate("following","username fullName profileImg").select("-password");
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
@@ -182,7 +182,7 @@ export const getFollowingUser = async(req,res)=>{
     try {
         const userId = req.user._id;
 
-        let user = await User.findById(userId).populate("following","username profileImg")
+        let user = await User.findById(userId).populate("following","username profileImg fullName")
         if(!user){
             return res.status(404).json({message:"User not found"})
         }
@@ -190,7 +190,8 @@ export const getFollowingUser = async(req,res)=>{
         const followedUsers = user.following.map(followedUser => ({
             id: followedUser._id,
             username: followedUser.username,
-            profileImg: followedUser.profileImg
+            profileImg: followedUser.profileImg,
+            fullName: followedUser.fullName
         }));
 
         res.status(200).json(followedUsers)
@@ -199,6 +200,36 @@ export const getFollowingUser = async(req,res)=>{
     } catch (error) {
         res.status(500).json({error:error.message});
         console.log("error in getFollowingUser function",error)
+    }
+}
+
+
+// get followers of currently authenticated users
+export const getFollowers = async(req,res)=>{
+    try {
+        const userId = req.user._id;
+
+        let user = await User.findById(userId).populate("followers","fullName profileImg username")
+
+        if(!user){
+            return res.status(404).json({message:"User not found"})
+        }
+
+        const userFollowers = user.followers.map(user=>({
+            id: user._id,
+            username: user.username,
+            profileImg: user.profileImg,
+            fullName: user.fullName
+        }))
+
+        res.status(200).json(userFollowers)
+        
+
+
+
+    } catch (error) {
+        res.status(500).json({error:error.message});
+        console.log("error in getFollowers function",error)
     }
 }
 

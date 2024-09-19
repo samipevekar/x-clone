@@ -15,6 +15,7 @@ import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate, formatPostDate } from "../../utils/date";
+import FollowersFollowingModal from "../../components/common/FollowersFollowingModal";
 
 
 const ProfilePage = () => {
@@ -24,6 +25,8 @@ const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState(null);
 	const [profileImg, setProfileImg] = useState(null);
 	const [feedType, setFeedType] = useState("posts");
+
+	const [Type, setType] = useState("")    // to see followers and following of CAU
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -115,6 +118,20 @@ const ProfilePage = () => {
 
 	const handleOnClose = () => {
 		document.getElementById('user_story_modal').close();
+	}
+
+	const handleFollowersClick = ()=>{
+		if(user?.followers.length>0){
+			document.getElementById('followers-following').showModal()
+			setType("followers")
+		}
+	}
+
+	const handleFollowingClick = ()=>{
+		if(user?.following.length>0){
+			document.getElementById('followers-following').showModal()
+			setType("following")
+		}
 	}
 
 
@@ -264,15 +281,16 @@ const ProfilePage = () => {
 									</div>
 								</div>
 								<div className='flex gap-2'>
-									<div className='flex gap-1 items-center'>
+									<div className='flex gap-1 items-center cursor-pointer' onClick={ handleFollowingClick}>
 										<span className='font-bold text-xs'>{user?.following.length}</span>
 										<span className='text-slate-500 text-xs'>Following</span>
 									</div>
-									<div className='flex gap-1 items-center'>
+									<div className='flex gap-1 items-center cursor-pointer' onClick={ handleFollowersClick}>
 										<span className='font-bold text-xs'>{user?.followers.length}</span>
 										<span className='text-slate-500 text-xs'>Followers</span>
 									</div>
 								</div>
+								<FollowersFollowingModal Type={Type}  data={Type === "followers" ? user?.followers : user?.following} />
 							</div>
 							<div className='flex w-full border-b border-gray-700 mt-4'>
 								<div

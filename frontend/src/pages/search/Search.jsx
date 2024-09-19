@@ -2,8 +2,9 @@ import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { FiSearch } from "react-icons/fi";
 import { useQuery } from '@tanstack/react-query';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Users from '../../components/common/Users';
 
-import SearchUser from "./SearchUser";
+
 
 export default function Search() {
     const URL = import.meta.env.VITE_URL;
@@ -81,7 +82,7 @@ export default function Search() {
 
                 {searches && searches.length > 0 && (
                     searches.map((user) => (
-                        <SearchUser
+                        <Users
                             key={user._id}
                             profileImg={user?.profileImg}
                             username={user?.username}
