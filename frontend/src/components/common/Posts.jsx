@@ -45,6 +45,9 @@ const Posts = ({ feedType, username, userId }) => {
 				throw new Error(error);
 			}
 		},
+		staleTime:600000
+
+		
 	});
 
 	useEffect(() => {

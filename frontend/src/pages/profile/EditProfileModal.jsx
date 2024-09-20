@@ -18,7 +18,13 @@ const EditProfileModal = ({ authUser }) => {
 	const { updateProfile, isUpdatingProfile } = useUpdateUserProfile();
 
 	const handleInputChange = (e) => {
-		setFormData({ ...formData, [e.target.name]: e.target.value });
+		const { name, value } = e.target;
+
+		if (name === "username") {
+			setFormData({ ...formData, [name]: value.toLowerCase() }); // Convert username to lowercase
+		} else {
+			setFormData({ ...formData, [name]: value });
+		}
 	};
 
 	useEffect(() => {

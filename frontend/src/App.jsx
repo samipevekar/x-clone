@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 import { Toaster } from "react-hot-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import RightPanelSkeleton from "./components/skeletons/RightPanelSkeleton";
 
 // Lazy-loaded components

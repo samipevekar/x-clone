@@ -14,6 +14,7 @@ import { FiSearch } from "react-icons/fi";
 
 const Sidebar = () => {
 
+	const queryClient = useQueryClient()
 
 	const handleLogoutClick = ()=>{
 		window.location.href = "/login"
@@ -25,8 +26,6 @@ const Sidebar = () => {
 	const {data:notifications} = useQuery({queryKey:["notifications"]})
 	
 	const notificationLength = notifications && notifications?.length>0 && notifications.length
-	
-	
 
 	return (
 		<div className='md:flex-[2_2_0] w-18  max-w-52'>

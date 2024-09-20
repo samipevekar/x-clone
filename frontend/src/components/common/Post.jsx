@@ -142,7 +142,8 @@ const Post = ({ post }) => {
 					return p;
 				})
 			);
-			toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");
+			toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");				
+			
 
 		},
 		onError: (error) => {
@@ -233,6 +234,7 @@ const Post = ({ post }) => {
 								)}
 							</span>
 						)}
+						
 						{/* confirmation modal for deleteing post */}
 						<dialog id="my_modal_1" className="modal">
 							<div className="modal-box rounded border border-gray-500">
@@ -248,6 +250,8 @@ const Post = ({ post }) => {
 							</div>
 						</dialog>
 					</div>
+
+					{/* uploaded posts here */}
 					<div className='flex flex-col gap-3 overflow-hidden'>
 						{/* Check if the post is a repost; if it is, display the original post's text */}
 						<span>{repost ? originalPost.text : post.text}</span>
@@ -257,9 +261,23 @@ const Post = ({ post }) => {
 								src={repost ? originalPost.img : post.img}
 								className='h-80 object-contain rounded-lg border border-gray-700'
 								alt='' loading="lazy"
+								onClick={() => document.getElementById(`${post?._id}`).showModal()}
 							/>
 						)}
 					</div>
+
+					{/* modal to open uploaded posts */}
+					<dialog id={`${post._id}`} className="modal">
+						<div className="modal-box w-full h-fit">
+							<form method="dialog">
+								{/* if there is a button in form, it will close the modal */}
+								<button className="btn btn-sm border-none outline-none btn-ghost absolute right-2 top-2 ">✕</button>
+							</form>
+							<img className="m-auto w-full h-full" src={repost ? originalPost.img : post.img} alt="" />
+						</div>
+					</dialog>
+
+					{/* all bottom icons  */}
 					<div className='flex justify-between mt-3'>
 						<div className='flex gap-4 items-center w-2/3 justify-between'>
 							<div
