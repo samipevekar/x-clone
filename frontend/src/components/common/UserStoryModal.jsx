@@ -77,12 +77,10 @@ const UserStoryModal = ({ id, story, onClose, storyId }) => {
             <p>{formatPostDate(story?.createdAt)}</p>
           </div>
         </Link>
-        {<div className='mt-[50px] '>
-          {story?.img ? (
-            <img className='w-full h-[450px] object-contain ' src={story?.img} alt="User Story" loading='lazy' />
-          ) : (
-            <p className='text-[18px] break-words'>{story?.text}</p>
-          )}
+        {<div className='mt-10 '>
+            <img className='w-full h-[280px] object-contain ' src={story?.img} alt="User Story" loading='lazy' />
+
+            <p className='text-[15px] break-words'>{story?.text}</p>
         </div>}
       </div>
     </dialog>

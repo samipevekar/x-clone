@@ -24,9 +24,9 @@ export const createStory = async(req,res)=>{
         // }
 
         // check either img or text exist
-        if(!text && !img){
-            return res.status(400).json({message:"Either img or text is required"})
-        }
+        // if(!text && !img){
+        //     return res.status(400).json({message:"Either img or text is required"})
+        // }
 
         // add img to cloudinary
         if (img) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/x-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>X clone</title>
+    <title>X Clone</title>
 
     <!-- Preload fonts if you are using custom fonts -->
     <link rel="preload" href="/path/to/font.woff2" as="font" type="font/woff2" crossorigin="anonymous">
@@ -13,9 +13,19 @@
     <!-- In practice, Vite should handle this automatically -->
     <link rel="stylesheet" href="/dist/style.css">
 
+    <!-- Link to your PWA manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Link to the Apple touch icon for iOS -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Set theme color for the browser UI on mobile -->
+    <meta name="theme-color" content="#ffffff" />
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Vite automatically handles module imports -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
