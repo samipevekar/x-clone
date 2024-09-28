@@ -142,8 +142,8 @@ const Post = ({ post }) => {
 					return p;
 				})
 			);
-			toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");				
-			
+			toast.success(isBookmarked ? "Post unbookmarked" : "Post bookmarked");
+
 
 		},
 		onError: (error) => {
@@ -234,7 +234,7 @@ const Post = ({ post }) => {
 								)}
 							</span>
 						)}
-						
+
 						{/* confirmation modal for deleteing post */}
 						<dialog id="my_modal_1" className="modal">
 							<div className="modal-box rounded border border-gray-500">
@@ -254,7 +254,7 @@ const Post = ({ post }) => {
 					{/* uploaded posts here */}
 					<div className='flex flex-col gap-3 overflow-hidden'>
 						{/* Check if the post is a repost; if it is, display the original post's text */}
-						<span>{repost ? originalPost.text : post.text}</span>
+						<span className="break-words w-fit" style={{overflowWrap:'break-word',wordWrap:'break-word',wordBreak:'break-all'}}>{repost ? originalPost.text : post.text}</span>
 						{/* Check if the post (original or repost) has an image and display it */}
 						{(repost ? originalPost.img : post.img) && (
 							<img
@@ -264,6 +264,12 @@ const Post = ({ post }) => {
 								onClick={() => document.getElementById(`${post?._id}`).showModal()}
 							/>
 						)}
+						{originalPost?.audio ? (
+							<div className="w-full flex flex-col items-center bg-gray-800 p-2 rounded-full">
+								<audio className="w-full bg-primary  p-1 rounded-full"
+									style={{ accentColor: "#4CAF50" }} controls src={originalPost?.audio} />
+							</div>
+						) : ""}
 					</div>
 
 					{/* modal to open uploaded posts */}
@@ -273,7 +279,7 @@ const Post = ({ post }) => {
 								{/* if there is a button in form, it will close the modal */}
 								<button className="btn btn-sm border-none outline-none btn-ghost absolute right-2 top-2 ">✕</button>
 							</form>
-							<img className="m-auto w-full h-full" src={repost ? originalPost.img : post.img} alt="" />
+							<img className="m-auto w-full h-[500px] object-contain" src={repost ? originalPost.img : post.img} alt="" />
 						</div>
 					</dialog>
 

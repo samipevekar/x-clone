@@ -3,46 +3,64 @@ import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import { v2 as cloudinary } from "cloudinary";
 import Notification from "../models/notification.model.js";
+import multer from 'multer';
+
+// Multer setup for handling multipart form data
+const storage = multer.memoryStorage();
+export const upload = multer({ storage }).fields([{ name: 'img' }, { name: 'audio' }]);
+
+
+// Promisified function for Cloudinary upload stream
+const uploadToCloudinary = (fileBuffer, options) => {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      });
+      uploadStream.end(fileBuffer);
+    });
+  };
 
 // Controller for creating a post
 export const createPost = async (req, res) => {
     try {
-        const { text } = req.body;
-        let { img } = req.body;
-        const userId = req.user._id.toString();
+      const { text } = req.body;
+      let {img} = req.body
+      let audio;
 
-        // Check if the user exists
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Ensure the post has either text or an image
-        if (!text && !img) {
-            return res.status(400).json({ message: "Post must have either text or image" });
-        }
-
-        // Upload the image to Cloudinary if it exists
-        if (img) {
-            const uploadedResponse = await cloudinary.uploader.upload(img);
-            img = uploadedResponse.secure_url;
-        }
-
-        // Create a new post
-        const newPost = new Post({
-            user: userId,
-            text,
-            img
-        });
-
-        await newPost.save(); // Save the new post to the database
-        res.status(201).json(newPost); // Respond with the new post
-
+    //   if(!img && !text && !audio){
+    //     return res.status(400).json({ message: "either image, text or audio required"})
+    //   }
+  
+      if (img) {
+        const uploadedImg = await cloudinary.uploader.upload(img);
+        img = uploadedImg.secure_url;
+      }
+  
+      // Handle audio upload if provided
+    if (req.files.audio) {
+        const audioBuffer = req.files.audio[0].buffer;
+        const uploadedAudio = await uploadToCloudinary(audioBuffer, { resource_type: "video", folder: "posts" });
+        audio = uploadedAudio.secure_url;
+      }
+  
+      const newPost = new Post({
+        user: req.user._id.toString(),
+        text,
+        img,
+        audio,
+      });
+  
+      await newPost.save();
+      res.status(201).json(newPost);
+  
     } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-        console.log("Error in createPost function", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-};
+  };
 
 // Controller for deleting a post
 export const deletePost = async (req, res) => {
