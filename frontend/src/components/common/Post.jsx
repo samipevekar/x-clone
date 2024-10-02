@@ -267,7 +267,7 @@ const Post = ({ post }) => {
 						{originalPost?.audio ? (
 							<div className="w-full flex flex-col items-center bg-gray-800 p-2 rounded-full">
 								<audio className="w-full bg-primary  p-1 rounded-full"
-									style={{ accentColor: "#4CAF50" }} controls src={originalPost?.audio} />
+									style={{ accentColor: "#4CAF50" }} preload="auto"  controls src={originalPost?.audio} />
 							</div>
 						) : ""}
 					</div>

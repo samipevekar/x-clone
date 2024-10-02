@@ -6,6 +6,7 @@ const XSvg = lazy(()=>import("../../../components/svgs/X")) ;
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import GoogleAuth from "../../../components/common/GoogleAuth";
 
 const LoginPage = () => {
 
@@ -100,6 +101,7 @@ const LoginPage = () => {
 						<button className='btn rounded-full btn-primary text-white btn-outline w-full'>Sign up</button>
 					</Link>
 				</div>
+				<GoogleAuth width={'fit'} />
 			</div>
 		</div>
 	);

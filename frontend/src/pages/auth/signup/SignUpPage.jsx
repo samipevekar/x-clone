@@ -8,6 +8,7 @@ import { FaUser } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import GoogleAuth from "../../../components/common/GoogleAuth";
 
 const SignUpPage = () => {
 
@@ -131,6 +132,7 @@ const SignUpPage = () => {
 						<button className='btn rounded-full btn-primary text-white btn-outline w-full'>Sign in</button>
 					</Link>
 				</div>
+				<GoogleAuth width={80}  />
 			</div>
 		</div>
 	);
