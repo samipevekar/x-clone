@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'prompt',  // Automatically updates the service worker
       includeAssets: ['favicon.ico','apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'], // Assets to include
       manifest: {
-        name: 'Twitter Clone',
-        short_name: 'TwitterClone',
+        name: 'Tweet Wave',
+        short_name: 'TweetWave',
         description: 'A Twitter clone built with MERN stack',
         theme_color: '#ffffff',
         icons: [

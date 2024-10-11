@@ -163,7 +163,7 @@ const CreatePost = () => {
           onChange={(e) => setText(e.target.value)}
         />
 
-        <span className="" >{text.split("").length}/300</span>
+        <span className="text-gray-500 text-[12px]" >{text.split("").length}/300</span>
 
         {img && (
           <div className="relative w-72 mx-auto">
@@ -204,7 +204,7 @@ const CreatePost = () => {
               className="fill-primary w-6 h-6 cursor-pointer"
               onClick={() => imgRef.current.click()}
             />
-            <BsEmojiSmileFill className="fill-primary w-5 h-5 cursor-pointer" />
+            {/* <BsEmojiSmileFill className="fill-primary w-5 h-5 cursor-pointer" /> */}
           </div>
           <input
             type="file"
@@ -220,7 +220,7 @@ const CreatePost = () => {
               className="btn btn-secondary rounded-full btn-sm text-white px-4"
               onClick={isRecording ? stopRecording : startRecording}
             >
-              {isRecording ? "Stop 🛑" : "Record ⏺️"}
+              {isRecording ? "Stop 🛑" : "Record Audio"}
             </button>
             {isRecording && (
               <span className="text-sm text-gray-500">

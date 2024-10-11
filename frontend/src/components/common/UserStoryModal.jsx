@@ -80,7 +80,7 @@ const UserStoryModal = ({ id, story, onClose, storyId }) => {
         {<div className='mt-10 '>
             <img className='w-full h-[280px] object-contain ' src={story?.img} alt="User Story" loading='lazy' />
 
-            <p className='text-[15px] break-words'>{story?.text}</p>
+            <p className='text-[15px] break-words text-center mt-2'>{story?.text}</p>
         </div>}
       </div>
     </dialog>

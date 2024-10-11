@@ -1,13 +1,22 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
-
 import usefollow from "../../hooks/useFollow";
+import { useState, useEffect } from "react";
+import LoadingSpinner from './LoadingSpinner';
 
-import LoadingSpinner from './LoadingSpinner'
 const RightPanel = () => {
+	const URL = import.meta.env.VITE_URL;
+	const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
-	const URL = import.meta.env.VITE_URL
+	// Track screen resize and update state accordingly
+	useEffect(() => {
+		const handleResize = () => {
+			setIsLargeScreen(window.innerWidth >= 1024);
+		};
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	const { data: suggestedUsers, isLoading } = useQuery({
 		queryKey: ["suggestedUsers"],
@@ -18,21 +27,23 @@ const RightPanel = () => {
 						"auth-token": localStorage.getItem("auth-token")
 					},
 					credentials: "include"
-				})
+				});
 				const data = await res.json();
 				if (!res.ok) {
-					throw new Error(data.error || "Something went wrong")
+					throw new Error(data.error || "Something went wrong");
 				}
-				return data
+				return data;
 			} catch (error) {
-				throw new Error(error)
+				throw new Error(error);
 			}
-		}
-	})
+		},
+		enabled: isLargeScreen, // Only fetch data if the screen is large
+	});
 
-	const { follow, isPending } = usefollow()
+	const { follow, isPending } = usefollow();
 
-	if (!suggestedUsers || suggestedUsers.length == 0) return <div className="md:w-64 w-0"></div>
+	// Do not render anything if the screen is small
+	if (!isLargeScreen || !suggestedUsers || suggestedUsers.length === 0) return <div className="md:w-64 w-0"></div>;
 
 	return (
 		<div className='hidden lg:block my-4 mx-2'>
@@ -41,9 +52,9 @@ const RightPanel = () => {
 				<div className='flex flex-col gap-4'>
 					{/* item */}
 					{isLoading && (
-						Array(4).fill(<RightPanelSkeleton />).map(elt => {
-							return elt
-						})
+						Array(4).fill(<RightPanelSkeleton />).map((elt, index) => (
+							<React.Fragment key={index}>{elt}</React.Fragment>
+						))
 					)}
 					{!isLoading &&
 						suggestedUsers?.map((user) => (
@@ -69,8 +80,8 @@ const RightPanel = () => {
 									<button
 										className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
 										onClick={(e) => {
-											e.preventDefault()
-											follow(user._id)
+											e.preventDefault();
+											follow(user._id);
 										}}
 									>
 										{isPending ? <LoadingSpinner size="sm" /> : "follow"}
@@ -83,4 +94,5 @@ const RightPanel = () => {
 		</div>
 	);
 };
+
 export default RightPanel;

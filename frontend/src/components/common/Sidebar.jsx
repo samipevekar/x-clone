@@ -1,6 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import LoginPage from '../../pages/auth/login/LoginPage'
+import {useQuery } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import XSvg from "../svgs/X";
@@ -11,10 +9,9 @@ import { FaUser } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { FaBookmark } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
+import { TbMessageChatbot } from "react-icons/tb";
 
 const Sidebar = () => {
-
-	const queryClient = useQueryClient()
 
 	const handleLogoutClick = ()=>{
 		window.location.href = "/login"
@@ -31,7 +28,8 @@ const Sidebar = () => {
 		<div className='md:flex-[2_2_0] w-18  max-w-52'>
 			<div className='sticky top-0 left-0 h-screen flex flex-col border-r border-gray-700 w-12 md:w-full'>
 				<Link to='/' className='flex justify-center md:justify-start'>
-					<XSvg className='px-2 w-12 h-12 rounded-full fill-white hover:bg-stone-900' />
+					{/* <XSvg className='px-2 w-12 h-12 rounded-full fill-white hover:bg-stone-900' /> */}
+					<img src="/tweet-wave-logo.png" alt="" className="w-[80px] my-2 px-2" />
 				</Link>
 				<ul className='flex flex-col gap-3 mt-4'>
 					<li className='flex justify-center md:justify-start'>
@@ -82,6 +80,16 @@ const Sidebar = () => {
 						>
 							<FaUser className='w-6 h-6' />
 							<span className='text-lg hidden md:block'>Profile</span>
+						</Link>
+					</li>
+
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to={`/chatbot`}
+							className='flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-2 max-w-fit cursor-pointer'
+						>
+							<TbMessageChatbot className="w-6 h-6 text-primary" />
+							<span className='text-lg hidden md:block text-primary '>TalkBuddy</span>
 						</Link>
 					</li>
 				</ul>

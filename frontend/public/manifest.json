@@ -1,6 +1,6 @@
 {
-    "name": "Twitter Clone",
-    "short_name": "TwitterClone",
+    "name": "TweetWave",
+    "short_name": "Tweet Wave",
     "description": "A Twitter clone built with MERN stack",
     "start_url": "/",
     "display": "standalone",

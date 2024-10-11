@@ -4,6 +4,7 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 import { Toaster } from "react-hot-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import RightPanelSkeleton from "./components/skeletons/RightPanelSkeleton";
+import AiChat from "./pages/ai-chatbot/AiChat";
 
 // Lazy-loaded components
 const HomePage = lazy(() => import("./pages/home/HomePage"));
@@ -88,6 +89,10 @@ function App() {
           <Route
             path="/profile/:username"
             element={authUser ? <ProfilePage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/chatbot"
+            element={authUser ? <AiChat /> : <Navigate to="/" />}
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
